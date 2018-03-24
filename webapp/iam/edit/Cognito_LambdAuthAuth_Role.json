@@ -12,6 +12,15 @@
             ]
         },
         {
+            "Action": [
+                "dynamodb:PutItem",
+                "dynamodb:UpdateItem",
+                "dynamodb:GetItem"
+            ],
+            "Effect": "Allow",
+            "Resource": "arn:aws:dynamodb:us-east-1:452684070979:table/CornchatUsers"
+        },
+        {
             "Effect": "Allow",
             "Action": [
                 "lambda:InvokeFunction"

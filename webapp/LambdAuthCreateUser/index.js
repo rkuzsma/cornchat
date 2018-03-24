@@ -8,7 +8,9 @@ var config = require('./config.json');
 
 // Get reference to AWS clients
 var dynamodb = new AWS.DynamoDB();
-var ses = new AWS.SES();
+
+// Not actually sending email for now
+//var ses = new AWS.SES();
 
 function computeHash(password, salt, fn) {
 	// Bytesize
@@ -63,6 +65,7 @@ function storeUser(email, password, salt, fn) {
 	});
 }
 
+/*
 function sendVerificationEmail(email, token, fn) {
 	var subject = 'Verification Email for ' + config.EXTERNAL_NAME;
 	var verificationLink = config.VERIFICATION_PAGE + '?email=' + encodeURIComponent(email) + '&verify=' + token;
@@ -92,6 +95,32 @@ function sendVerificationEmail(email, token, fn) {
 		}
 	}, fn);
 }
+*/
+
+
+function updateUser(email, fn) {
+	dynamodb.updateItem({
+			TableName: config.DDB_TABLE,
+			Key: {
+				email: {
+					S: email
+				}
+			},
+			AttributeUpdates: {
+				verified: {
+					Action: 'PUT',
+					Value: {
+						BOOL: true
+					}
+				},
+				verifyToken: {
+					Action: 'DELETE'
+				}
+			}
+		},
+		fn);
+}
+
 
 exports.handler = function(event, context) {
 	var email = event.email;
@@ -112,6 +141,20 @@ exports.handler = function(event, context) {
 						context.fail('Error in storeUser: ' + err);
 					}
 				} else {
+
+					// For now, we'll set the user to "Verified" without sending email.
+					updateUser(email, function(err, data) {
+						if (err) {
+							context.fail('Error in updateUser: ' + err);
+						} else {
+							console.log('User verified: ' + email);
+							context.succeed({
+								verified: true
+							});
+						}
+					});
+
+					/*
 					sendVerificationEmail(email, token, function(err, data) {
 						if (err) {
 							context.fail('Error in sendVerificationEmail: ' + err);
@@ -121,6 +164,7 @@ exports.handler = function(event, context) {
 							});
 						}
 					});
+					*/
 				}
 			});
 		}
