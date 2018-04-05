@@ -27,3 +27,12 @@ module.exports = {
   },
   mode: 'development'
 };
+
+const productionConfig = merge([
+  {
+    output: {
+      // Tweak this to match your GitHub project name
+      publicPath: "/cornchat/",
+    }
+  }
+]);
