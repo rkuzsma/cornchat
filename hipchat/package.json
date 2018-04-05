@@ -4,9 +4,12 @@
   "description": "",
   "private": true,
   "scripts": {
-    "start:dev": "webpack-dev-server",
+    "start:dev": "webpack-dev-server --config webpack.dev.js",
+    "build:dev": "webpack --config webpack.dev.js",
     "generate-dev-certs": "openssl req -x509 -newkey rsa:4096 -keyout dev-certs/key.pem -out dev-certs/cert.pem -days 365 -nodes -subj \"/CN=cornchat.development.fake/emailAddress=cornchat@fakedomain.com/O=Cornchat/OU=Development/C=US/ST=NH/L=Nowhere\"",
-    "trust-dev-certs": "security add-trusted-cert -e hostnameMismatch -r trustRoot -k ~/Library/Keychains/login.keychain dev-certs/cert.pem"
+    "trust-dev-certs": "security add-trusted-cert -e hostnameMismatch -r trustRoot -k ~/Library/Keychains/login.keychain dev-certs/cert.pem",
+    "build": "webpack --config webpack.prod.js",
+    "deploy": "gh-pages -d build"
   },
   "keywords": [],
   "author": "",
@@ -15,6 +18,7 @@
     "gh-pages": "^1.1.0",
     "webpack": "^4.3.0",
     "webpack-cli": "^2.0.13",
-    "webpack-dev-server": "^3.1.1"
+    "webpack-dev-server": "^3.1.1",
+    "webpack-merge": "^4.1.2"
   }
 }
