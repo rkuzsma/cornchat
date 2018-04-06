@@ -1,13 +1,12 @@
 # cornchat
 
-## Installation
+## Install
 
 Open `/Applications/HipChat.app/Contents/Resources/chat.html` and add these lines at the bottom:
 
-TODO Replace these links with the github links.
 ```
-<link href="https://localhost:8080/cornchat.css" rel="stylesheet" type="text/css">
-<script src="https://localhost:8080/bundle.js"></script>
+<link href="https://rkuzsma.github.io/cornchat/cornchat.css" rel="stylesheet" type="text/css">
+<script src="https://rkuzsma.github.io/cornchat/bundle.js"></script>
 ```
 
 
@@ -38,3 +37,13 @@ Quick test:
 https://localhost:8080/healthcheck.js
 
 Start HipChat. You'll get hot module replacement, too.
+
+### Deploy
+The app is hosted on github pages:
+https://rkuzsma.github.io/cornchat/bundle.js
+
+Build and deploy for production using:
+```
+npm run build
+npm run deploy
+```

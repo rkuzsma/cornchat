@@ -22,3 +22,42 @@
   border:solid 1px #000;
   margin: 2px;
 }
+.CORN-logo {
+  cursor: pointer;
+  margin-left: 10px;
+  margin-top: 5px;
+  width: 128px;
+  height: 32px;
+}
+.CORN-logo img {
+  vertical-align: middle;
+}
+.CORN-dialog {
+  display: none;
+  position: absolute;
+  background: white;
+  z-index: 11;
+  margin-left: 50px;
+  margin-top: 50px;
+  width: 500px;
+  height: 600px;
+  border-radius: 25px;
+  border: 2px solid green;
+}
+.CORN-dialog div {
+  margin: 10px 10px 10px 10px;
+}
+.CORN-clearfix::after {
+  content: "";
+  clear: both;
+  display: table;
+}
+.CORN-float-right {
+  float:right;
+}
+.CORN-dialog h1 {
+  font-size: 20px;
+}
+.CORN-dialog span {
+  cursor: pointer;
+}
