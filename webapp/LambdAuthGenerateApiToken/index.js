@@ -49,6 +49,7 @@ exports.handler = function(event, context) {
 		} else {
 			console.log('Generated token for email: ' + email);
 			context.succeed({
+				created: true,
 				email: email,
 				apiToken: apiToken
 			});

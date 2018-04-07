@@ -1,0 +1,59 @@
+<html>
+<head>
+  <title>CornChat - Validate API Token</title>
+	<link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+  <script src="https://sdk.amazonaws.com/js/aws-sdk-2.3.7.min.js"></script>
+	<script>
+  AWS.config.region = '<REGION>';
+	AWS.config.credentials = new AWS.CognitoIdentityCredentials({
+    IdentityPoolId: '<IDENTITY_POOL_ID>'
+  });
+  var lambda = new AWS.Lambda();
+	</script>
+  <h1>Generate CornChat API Token</h1>
+  <div id="info">
+  </div>
+  <table>
+    <tr>
+      <td>Email</td>
+      <td><input type="email" id="email" size="20">
+    </tr>
+    <tr>
+      <td colspan="2">
+        <button id="generate-button">Generate</button>
+      </td>
+    </tr>
+  </table>
+  <script>
+  var info = document.getElementById('info');
+  var email = document.getElementById('email');
+  var generateButton = document.getElementById('generate-button');
+  generateButton.addEventListener('click', function() {
+    info.innerHTML = 'Generating token...';
+		if (email.value == null || email.value == '') {
+    	info.innerHTML = 'ERROR: Please specify your email address.';
+    } else {
+      var input = {
+        email: email.value
+      };
+      lambda.invoke({
+        FunctionName: 'LambdAuthGenerateApiToken',
+        Payload: JSON.stringify(input)
+      }, function(err, data) {
+        if (err) console.log(err, err.stack);
+        else {
+          var output = JSON.parse(data.Payload);
+          if (output.created) {
+            info.innerHTML = 'API Token: ' + JSON.stringify(output.apiToken);
+          } else {
+            info.innerHTML = 'API Token <b>not</b> generated.';
+          }
+        }
+      });
+    }
+  });
+  </script>
+</body>
+</html>
