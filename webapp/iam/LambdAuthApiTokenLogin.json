@@ -6,14 +6,14 @@
                 "dynamodb:GetItem"
             ],
             "Effect": "Allow",
-            "Resource": "arn:aws:dynamodb:us-east-1:452684070979:table/CornchatUsers"
+            "Resource": "arn:aws:dynamodb:<REGION>:<AWS_ACCOUNT_ID>:table/<DDB_TOKENS_TABLE>"
         },
         {
             "Effect": "Allow",
             "Action": [
                 "cognito-identity:GetOpenIdTokenForDeveloperIdentity"
             ],
-            "Resource": "arn:aws:cognito-identity:us-east-1:452684070979:identitypool/us-east-1:83c77c52-ef3f-4e51-bf39-d682eda27aad"
+            "Resource": "arn:aws:cognito-identity:<REGION>:<AWS_ACCOUNT_ID>:identitypool/<IDENTITY_POOL_ID>"
         },
         {
             "Sid": "",

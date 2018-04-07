@@ -6,6 +6,7 @@
   "MAX_AGE": "10",
   "CRYPTO_BYTE_SIZE": 128,
   "DDB_TABLE": "CornchatUsers",
+  "DDB_TOKENS_TABLE": "CornchatApiTokens",
   "IDENTITY_POOL_NAME": "CornchatIdentityPool",
   "DEVELOPER_PROVIDER_NAME": "login.cornchat",
   "EXTERNAL_NAME": "Cornchat Authentication",

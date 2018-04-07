@@ -21,6 +21,7 @@ REGION=$(jq -r '.REGION' config.json)
 BUCKET=$(jq -r '.BUCKET' config.json)
 MAX_AGE=$(jq -r '.MAX_AGE' config.json)
 DDB_TABLE=$(jq -r '.DDB_TABLE' config.json)
+DDB_TOKENS_TABLE=$(jq -r '.DDB_TOKENS_TABLE' config.json)
 IDENTITY_POOL_NAME=$(jq -r '.IDENTITY_POOL_NAME' config.json)
 DEVELOPER_PROVIDER_NAME=$(jq -r '.DEVELOPER_PROVIDER_NAME' config.json)
 
@@ -41,6 +42,14 @@ aws dynamodb create-table --table-name $DDB_TABLE \
     --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5 \
 		--region $REGION
 echo "Creating DynamoDB Table $DDB_TABLE end (creation still in progress)"
+
+echo "Creating DynamoDB Table $DDB_TOKENS_TABLE begin..."
+aws dynamodb create-table --table-name $DDB_TOKENS_TABLE \
+    --attribute-definitions AttributeName=token,AttributeType=S \
+    --key-schema AttributeName=token,KeyType=HASH \
+    --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=2 \
+		--region $REGION
+echo "Creating DynamoDB Table $DDB_TOKENS_TABLE end (creation still in progress)"
 
 # Create Cognito Identity Pool
 IDENTITY_POOL_ID=$(aws cognito-identity list-identity-pools --max-results 1 \
@@ -75,6 +84,7 @@ for f in $(ls -1 trust*); do
   sed -e "s/<AWS_ACCOUNT_ID>/$AWS_ACCOUNT_ID/g" \
       -e "s/<DYNAMODB_TABLE>/$DDB_TABLE/g" \
       -e "s/<DYNAMODB_EMAIL_INDEX>/$DDB_EMAIL_INDEX/g" \
+      -e "s/<DDB_TOKENS_TABLE>/$DDB_TOKENS_TABLE/g" \
       -e "s/<REGION>/$REGION/g" \
       -e "s/<IDENTITY_POOL_ID>/$IDENTITY_POOL_ID/g" \
       -e "s/<REGION>/$REGION/g" \
@@ -87,6 +97,7 @@ for f in $(ls -1 Cognito*); do
   sed -e "s/<AWS_ACCOUNT_ID>/$AWS_ACCOUNT_ID/g" \
       -e "s/<DYNAMODB_TABLE>/$DDB_TABLE/g" \
       -e "s/<DYNAMODB_EMAIL_INDEX>/$DDB_EMAIL_INDEX/g" \
+      -e "s/<DDB_TOKENS_TABLE>/$DDB_TOKENS_TABLE/g" \
       -e "s/<REGION>/$REGION/g" \
       -e "s/<IDENTITY_POOL_ID>/$IDENTITY_POOL_ID/g" \
       -e "s/<REGION>/$REGION/g" \
@@ -119,6 +130,7 @@ for f in $(ls -1 LambdAuth*); do
   sed -e "s/<AWS_ACCOUNT_ID>/$AWS_ACCOUNT_ID/g" \
       -e "s/<DYNAMODB_TABLE>/$DDB_TABLE/g" \
       -e "s/<DYNAMODB_EMAIL_INDEX>/$DDB_EMAIL_INDEX/g" \
+      -e "s/<DDB_TOKENS_TABLE>/$DDB_TOKENS_TABLE/g" \
       -e "s/<IDENTITY_POOL_ID>/$IDENTITY_POOL_ID/g" \
       -e "s/<REGION>/$REGION/g" \
       $f > edit/$f

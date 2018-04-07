@@ -33,7 +33,6 @@
   vertical-align: middle;
 }
 .CORN-dialog {
-  display: none;
   position: absolute;
   background: white;
   z-index: 11;
@@ -52,12 +51,24 @@
   clear: both;
   display: table;
 }
-.CORN-float-right {
-  float:right;
-}
-.CORN-dialog h1 {
+.CORN-dialog-heading {
   font-size: 20px;
+  float: left;
 }
-.CORN-dialog span {
+.CORN-dialog-x {
   cursor: pointer;
+  float: right;
+}
+.CORN-button {
+  background-color: #4CAF50;
+  color: white;
+  border:none;
+  display:inline-block;
+  padding:8px 16px;
+  vertical-align:middle;
+  overflow:hidden;
+  text-decoration:none;
+  text-align:center;
+  cursor:pointer;
+  white-space:nowrap;
 }

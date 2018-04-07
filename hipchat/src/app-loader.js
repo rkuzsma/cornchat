@@ -1,5 +1,5 @@
-import runOneLoop from './app';
-import settings from './settings';
+import runOneLoop from './app-loop';
+import constants from './constants';
 
 // The app-loader runs the app loop repeatedly every loop_interval millis.
 // For dev, run dev server with "npm run start:dev" to
@@ -12,21 +12,21 @@ import settings from './settings';
     window.setTimeout(function(){
 
       // e.g. https://localhost:8080/bundle.js
-      $.get(settings.dev_url, function() {
+      $.get(constants.dev_url, function() {
         runOneLoop();
       })
       .fail(function(err) {
         alert( "CornChat: Hot reload error: " + JSON.stringify(err));
       });
 
-    }, settings.loop_interval);
+    }, constants.loop_interval);
   }
   else {
     window.setInterval(function(){
 
       runOneLoop();
 
-    }, settings.loop_interval);
+    }, constants.loop_interval);
   }
 
 })();

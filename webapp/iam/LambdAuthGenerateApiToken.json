@@ -3,10 +3,11 @@
     "Statement": [
         {
             "Action": [
-                "dynamodb:PutItem"
+                "dynamodb:PutItem",
+                "dynamodb:UpdateItem"
             ],
             "Effect": "Allow",
-            "Resource": "arn:aws:dynamodb:us-east-1:452684070979:table/CornchatUsers"
+            "Resource": "arn:aws:dynamodb:<REGION>:<AWS_ACCOUNT_ID>:table/<DDB_TOKENS_TABLE>"
         },
         {
             "Sid": "",
