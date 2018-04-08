@@ -28,12 +28,9 @@
   var loginButton = document.getElementById('login-button');
   var testSendButton = document.getElementById('test-send-button');
   AWS.config.update({
-    region: '<REGION>',
+    region: 'us-east-1',
     credentials: new AWS.CognitoIdentityCredentials({
-      //AccountId: '452684070979', // your AWS account ID
-      //RoleArn: 'arn:aws:iam::452684070979:role/Cognito_LambdAuthUnauth_Role',
       IdentityPoolId: '<IDENTITY_POOL_ID>'
-    })
   });
 
   testSendButton.addEventListener('click', function() {
