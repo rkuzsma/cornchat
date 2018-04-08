@@ -11,9 +11,6 @@ export default function runOneLoop() {
     if (!window.CORN_globalState) {
       window.CORN_globalState = {
         isShowSettings: false,
-        settings: {
-          token: window.localStorage.getItem("CORN_token")
-        },
         isFirstLoop: true
       }
     }
@@ -45,7 +42,7 @@ export default function runOneLoop() {
     }
 
     const onSettingsChanged = function(newSettings) {
-      window.CORN_globalState.settings.token = newSettings.token;
+      setCornToken(newSettings.token);
       renderSettingsDialog();
     }
 
@@ -53,11 +50,18 @@ export default function runOneLoop() {
       ReactDOM.render(<Logo onClick={toggleSettingsDialog} />, logoRootEl());
     }
 
+    const getCornToken = function() {
+      return window.localStorage.getItem("CORN_token");
+    }
+    const setCornToken = function(token) {
+      window.localStorage.setItem("CORN_token", token);
+    }
+
     const renderSettingsDialog = function() {
       ReactDOM.render(<SettingsDialog
         onClose={toggleSettingsDialog}
         show={window.CORN_globalState.isShowSettings}
-        token={window.CORN_globalState.settings.CORN_token}
+        token={getCornToken()}
         onSettingsChanged={onSettingsChanged} />, dialogRootEl());
     }
 

@@ -59,7 +59,7 @@
   cursor: pointer;
   float: right;
 }
-.CORN-button {
+.CORN-button, .CORN-button-default {
   background-color: #4CAF50;
   color: white;
   border:none;
@@ -71,4 +71,27 @@
   text-align:center;
   cursor:pointer;
   white-space:nowrap;
+}
+.CORN-button-default {
+  background-color: #2196F3;
+  font-weight: bold;
+}
+.CORN-info, .CORN-success, .CORN-error {
+  border: 1px solid;
+  margin: 10px 0px;
+  padding:15px 10px 15px 50px;
+  background-repeat: no-repeat;
+  background-position: 10px center;
+}
+.CORN-error {
+  color: #D8000C;
+  background-color: #FFBABA;
+}
+.CORN-info {
+  color: #00529B;
+  background-color: #BDE5F8;
+}
+.CORN-success {
+  color: #4F8A10;
+  background-color: #DFF2BF;
 }

@@ -34,7 +34,9 @@
       AWS.config.update({
         region: 'us-east-1',
         credentials: new AWS.CognitoIdentityCredentials({
-          IdentityPoolId: '<IDENTITY_POOL_ID>'
+          //AccountId: '452684070979', // your AWS account ID
+          //RoleArn: 'arn:aws:iam::452684070979:role/Cognito_LambdAuthUnauth_Role',
+          IdentityPoolId: 'us-east-1:83c77c52-ef3f-4e51-bf39-d682eda27aad'
         })
       });
       var lambda = new AWS.Lambda();
