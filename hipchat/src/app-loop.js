@@ -1,21 +1,48 @@
-import showBar from './bar';
+'use strict';
+
 import log from './logger';
 import Logo from './logo';
 import SettingsDialog from './settings-dialog';
+import CornLoop from './corn-loop';
+import CornChatUser from './cornchat-user';
+import ReactDOM from "react-dom";
 
 // The app's main run loop. App-Loader invokes the loop iteratively.
 export default function runOneLoop() {
   try {
+    if (module.hot) { // run with "npm run start:dev" to enable
+      log("Hot Module Replacement enabled");
+      module.hot.accept();
+    }
+
+    log("3");
+
     // For sharing state across components that must be rendered into
     // different root elements.
-    if (!window.CORN_globalState) {
-      window.CORN_globalState = {
-        isShowSettings: false,
-        isFirstLoop: true
+    const initGlobalStateOnce = function() {
+      if (!window.CORN_globalState) {
+        window.CORN_globalState = {
+          isShowSettings: false,
+          isLogoRendered: false
+        }
       }
     }
-    else {
-      window.CORN_globalState.isFirstLoop = false;
+
+    const withAuthenticatedUser = function(fn) {
+      if (CornChatUser.isAuthenticated()) {
+        fn();
+      }
+      else {
+        log("AppLoop: (re)Authenticating user...");
+        CornChatUser.authenticateUser(getCornToken(), function(err, user) {
+          if (err) {
+            log("AppLoop: Not authenticated. " + err);
+            return;
+          }
+          log("AppLoop: Authenticated user.")
+          fn();
+        });
+      }
     }
 
     const logoRootEl = function() {
@@ -46,13 +73,17 @@ export default function runOneLoop() {
       renderSettingsDialog();
     }
 
-    const renderLogo = function() {
-      ReactDOM.render(<Logo onClick={toggleSettingsDialog} />, logoRootEl());
+    const renderLogoOnce = function() {
+      if (!window.CORN_globalState.isLogoRendered) {
+        ReactDOM.render(<Logo onClick={toggleSettingsDialog} />, logoRootEl());
+        window.CORN_globalState.isLogoRendered = true;
+      }
     }
 
     const getCornToken = function() {
       return window.localStorage.getItem("CORN_token");
     }
+
     const setCornToken = function(token) {
       window.localStorage.setItem("CORN_token", token);
     }
@@ -65,12 +96,12 @@ export default function runOneLoop() {
         onSettingsChanged={onSettingsChanged} />, dialogRootEl());
     }
 
-    if (window.CORN_globalState.isFirstLoop) {
-      log("CornChat Initializing");
-      renderLogo();
-    }
+    initGlobalStateOnce();
 
-    //renderSettingsDialog();
+    withAuthenticatedUser(function() {
+      renderLogoOnce();
+    //  CornLoop();
+    });
   }
   catch(err) {
     log("ERROR: " + err + err.stack);

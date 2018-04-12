@@ -1,3 +1,5 @@
+'use strict';
+
 import log from './logger';
 import React from "react";
 import ReactDOM from "react-dom";

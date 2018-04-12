@@ -1,3 +1,10 @@
+'use strict';
+
 export default function log(str) {
-  window.macapi.log("[CORNCHAT]: " + str);
+  if (window.macapi) {
+    window.macapi.log("[CORNCHAT]: " + str);
+  }
+  else {
+    console.log("[CORNCHAT]: " + str);
+  }
 }
