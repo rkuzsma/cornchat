@@ -15,7 +15,7 @@ class CornCob extends React.Component {
       <div>
         <ThumbsUpButton onThumbsUp={this.props.onThumbsUp} />
         <AddTagButton onAddTag={this.props.onAddTag} />
-        <Tags tags={this.props.tags} onFilterByTag={this.handleFilterByTag} />
+        <Tags tags={this.props.tags} onFilterByTag={this.props.onFilterByTag} />
       </div>
     );
   }
@@ -24,7 +24,8 @@ class CornCob extends React.Component {
 CornCob.propTypes = {
   tags: PropTypes.object,
   onAddTag: PropTypes.func.isRequired,
-  onThumbsUp: PropTypes.func.isRequired
+  onThumbsUp: PropTypes.func.isRequired,
+  onFilterByTag: PropTypes.func.isRequired
 };
 
 export default CornCob;

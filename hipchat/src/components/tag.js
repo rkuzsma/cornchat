@@ -8,6 +8,7 @@ class Tag extends React.Component {
   }
 
   handleFilterByTag(event) {
+    alert('clicked');
     this.props.onFilterByTag(this.props.tag);
   }
 
