@@ -1,5 +1,3 @@
-'use strict';
-
 import log from '../logger';
 import PropTypes from 'prop-types';
 import AddTagDialog from './add-tag-dialog';

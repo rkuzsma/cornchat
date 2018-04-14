@@ -13,7 +13,6 @@ module.exports = merge(common, {
     ],
     disableHostCheck: true,
     https: true,
-    inline: true,
     headers: {
       'Access-Control-Allow-Origin': '*'
     },

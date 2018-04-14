@@ -1,4 +1,4 @@
 {
   "presets": ["env", "react"],
-  "plugins": ["dynamic-import-webpack"]
+  "plugins": ["dynamic-import-webpack", "transform-runtime", "transform-strict-mode"]
 }

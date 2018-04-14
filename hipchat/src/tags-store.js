@@ -1,16 +1,18 @@
-'use strict';
-
 import log from './logger';
 import CornChatUser from './cornchat-user';
 
 export default {
 
   fetchTags: function(mids, fn) {
-    log(`fetchTags(${mids})`);
+    log(`fetchTags(${JSON.stringify(mids)})`);
     try {
+      if (!mids || Object.keys(mids).length === 0) {
+        fn(null, {});
+        return;
+      }
       var aws = CornChatUser.currentAuthenticatedUser().aws;
       var ddb = new aws.DynamoDB();
-      var keys = _.map(mids, function(mid) {
+      var keys = Object.keys(mids).map((mid) => {
         return { 'mid': {"S": mid } };
       });
       var params = {
@@ -28,16 +30,33 @@ export default {
         }
         else {
           // Example response:
-          // {"Responses":{"CornchatTags":[{"mid":{"S":"699a1266-c937-44d8-bf54-2fa40c59005c"},"tags":{"L":[{"M":{"Name":{"S":"Red"}}},{"M":{"Name":{"S":"Blue"}}}]}}]},"UnprocessedKeys":{}}
-          // Convert to a friendlier data structure
-          // {"699a1266-c937-44d8-bf54-2fa40c59005c": ["Red","Blue"]}
-          var resultsArray = data.Responses.CornchatTags;
+          //
+          // {"Responses":{"CornchatTags": [
+          //   {"mid":{"S":"699a1266-c937-44d8-bf54-2fa40c59005c"},
+          //    "tags":{"L": [
+          //      {"M":{"Name":{"S":"Red"}}},
+          //      {"M":{"Name":{"S":"Blue"}}}
+          //    ]}
+          //   },
+          //   {"mid":{"S":"deadbeef-c937-44d8-bf54-bf54bf54bf54"},
+          //    "tags":{"L": [
+          //      {"M":{"Name":{"S":"Green"}}}
+          //    ]}
+          //   }
+          // ]},"UnprocessedKeys":{}}
+          //
+          // Convert to a friendlier data structure:
+          //
+          // {"699a1266-c937-44d8-bf54-2fa40c59005c": [{name: "Red"},{name: "Blue"}],
+          //  "deadbeef-c937-44d8-bf54-bf54bf54bf54": [{name: "Green"}]}}
+          //
           var midsTagsMap = {};
-          var midsTagsArray = _.each(resultsArray, function(midItem) {
-            var tagNamesArray = _.map(midItem.tags.L, function(tagItem) {
-              return tagItem.M.Name.S;
+          data.Responses.CornchatTags.forEach((midItem) => {
+            var midsTagsArray = [];
+            midItem.tags.L.forEach((tagItem) => {
+              midsTagsArray.push({name: tagItem.M.Name.S});
             });
-            midsTagsMap[midItem.mid.S] = tagNamesArray;
+            midsTagsMap[midItem.mid.S] = midsTagsArray;
           });
           fn(null, midsTagsMap);
         }

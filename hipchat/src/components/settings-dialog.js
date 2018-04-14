@@ -1,12 +1,12 @@
 'use strict';
 
-import log from './logger';
+import log from '../logger';
 import React from "react";
 import ReactDOM from "react-dom";
-import Constants from './constants';
-import Utils from './utils';
+import Constants from '../constants';
+import Utils from '../utils';
 import PropTypes from 'prop-types';
-import ApiToken from './api-token';
+import ApiToken from '../api-token';
 import Msg from './msg';
 
 class SettingsDialog extends React.Component {

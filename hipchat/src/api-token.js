@@ -1,6 +1,4 @@
-'use strict';
-
-import constants from './constants';
+import Constants from './constants';
 import log from './logger';
 import AWS from 'aws-sdk';
 
@@ -10,7 +8,7 @@ export default {
       AWS.config.update({
         region: 'us-east-1',
         credentials: new AWS.CognitoIdentityCredentials({
-          IdentityPoolId: constants.cornchat_identity_pool_id
+          IdentityPoolId: Constants.cornchat_identity_pool_id
         })
       });
       AWS.config.getCredentials(function(err) {
@@ -40,7 +38,7 @@ export default {
       AWS.config.update({
         region: 'us-east-1',
         credentials: new AWS.CognitoIdentityCredentials({
-          IdentityPoolId: constants.cornchat_identity_pool_id
+          IdentityPoolId: Constants.cornchat_identity_pool_id
         })
       });
     }

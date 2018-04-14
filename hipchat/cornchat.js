@@ -1,5 +1,3 @@
-'use strict';
-
 $(document).on('hc-ready', function () {
 
   var CORN_loop = function() {

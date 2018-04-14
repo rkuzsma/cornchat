@@ -1,5 +1,3 @@
-'use strict';
-
 import log from './logger';
 import AWS from 'aws-sdk';
 import ApiToken from './api-token';
