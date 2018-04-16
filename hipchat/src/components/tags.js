@@ -8,16 +8,15 @@ class Tags extends React.Component {
   }
 
   render() {
-    // TODO Here's where I left off. this.props.tags are correct, but we're not rendering them right?
-    log("-------");
-    log(JSON.stringify(this.props.tags));
+    if (!this.props.tags) {
+      log("No tags to render");
+      return null;
+    }
     const tagItems = this.props.tags.map((tag) =>
       <Tag
         tag={tag}
         onFilterByTag={this.props.onFilterByTag} />
     );
-    log("--");
-    log(JSON.stringify(tagItems));
     return (
       <span>
         {tagItems}

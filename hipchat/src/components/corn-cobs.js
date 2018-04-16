@@ -3,48 +3,14 @@ import TagsStore from '../tags-store';
 import ReactDOM from "react-dom";
 import CornCob from './corn-cob';
 import Constants from '../constants';
+import PropTypes from 'prop-types';
 
 class CornCobs extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {
-      tags: {}
-    }
-
-    // Keep checking for new tags
-    window.setInterval(() => {
-      TagsStore.fetchTags(this.findVisibleMsgIds(), (err, tags) => {
-        if (err) {
-          log("Error in fetchMsgTags: " + err);
-          tags = {};
-        }
-        this.setState({tags: tags});
-      });
-    }, Constants.tag_fetch_loop_interval);
-
-    this.findVisibleMsgIds = this.findVisibleMsgIds.bind(this);
     this.handleThumbsUp = this.handleThumbsUp.bind(this);
     this.handleAddTag = this.handleAddTag.bind(this);
-    this.handleFilterByTag = this.handleFilterByTag.bind(this);
     this._renderCob = this._renderCob.bind(this);
-  }
-
-  findVisibleMsgIds() {
-    var tags = {};
-    var msgDivs = $('div.msg-line');
-    var concatenated_ids = '';
-    var random = 0;
-    const msgIdsFromMsgDivs = function(msgDivs) {
-      return _.reduce(msgDivs, function(res, msgDiv) {
-        var msgId = $(msgDiv).data('mid');
-        if (msgId) {
-          res[msgId] = msgId;
-        }
-        return res;
-      }, {});
-    }
-    var res = msgIdsFromMsgDivs(msgDivs);
-    return res;
   }
 
   handleThumbsUp() {
@@ -63,22 +29,18 @@ class CornCobs extends React.Component {
     });
   }
 
-  handleFilterByTag(tag) {
-    alert('TODO: Only show messages tagged with ' + tag.name);
-  }
-
   _renderCob(msgId, cornCobRootEl) {
     ReactDOM.render(
         <CornCob
-          tags={this.state.tags[msgId]}
-          onFilterByTag={this.handleFilterByTag}
+          tags={this.props.tags[msgId]}
+          onFilterByTag={this.props.onFilterByTag}
           onThumbsUp={this.handleThumbsUp}
           onAddTag={this.handleAddTag} />
       , cornCobRootEl);
   }
 
   render() {
-    var allTags = this.state.tags;
+    var allTags = this.props.tags;
     var scrollAdjustment = 0;
     var msgs = $('div.actionable-msg-container');
     _.each(msgs, (msg, key) => {
@@ -120,5 +82,10 @@ class CornCobs extends React.Component {
     return null;
   }
 }
+
+CornCobs.propTypes = {
+  tags: PropTypes.object.isRequired,
+  onFilterByTag: PropTypes.func.isRequired
+};
 
 export default CornCobs;

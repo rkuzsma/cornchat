@@ -2,6 +2,7 @@ import log from './logger';
 import React from "react";
 import ReactDOM from "react-dom";
 import App from './app';
+import CornChatUser from './cornchat-user';
 
 // For dev, run dev server with "npm run start:dev"
 (function () {
@@ -12,13 +13,24 @@ import App from './app';
     // In the HipChat browser, HMR doesn't reload the script. :(
   }
 
-  const rootEl = function() {
-    var rootEl = document.getElementById('CORN_rootEl');
-    if (rootEl) return rootEl;
-    rootEl = $("<div id='CORN_rootEl'></div>");
-    $('#hipchat').append(rootEl, $('#hipchat')[0].childNodes[0]);
-    return document.getElementById('CORN_rootEl');
-  }
+  $(document).ready(function() {
+    log("Loading App");
+    try {
+      const rootEl = function() {
+        var rootEl = document.getElementById('CORN_rootEl');
+        if (rootEl) return rootEl;
+        rootEl = $("<div id='CORN_rootEl'></div>");
+        $('body').append(rootEl);
+        return document.getElementById('CORN_rootEl');
+      }
+      let el = rootEl();
+      log("Rendering App into " + el);
+      ReactDOM.render(<App />, el);
+    }
+    catch(err) {
+      log("Error rendering app: " + err);
+      log(err.stack);
+    }
+  });
 
-  ReactDOM.render(<App />, rootEl());
 })();
