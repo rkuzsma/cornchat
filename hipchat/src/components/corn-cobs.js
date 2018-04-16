@@ -2,6 +2,7 @@ import log from '../logger';
 import TagsStore from '../tags-store';
 import ReactDOM from "react-dom";
 import CornCob from './corn-cob';
+import CornCobPortal from './corn-cob-portal';
 import Constants from '../constants';
 import PropTypes from 'prop-types';
 
@@ -10,7 +11,6 @@ class CornCobs extends React.Component {
     super(props);
     this.handleThumbsUp = this.handleThumbsUp.bind(this);
     this.handleAddTag = this.handleAddTag.bind(this);
-    this._renderCob = this._renderCob.bind(this);
   }
 
   handleThumbsUp() {
@@ -29,49 +29,40 @@ class CornCobs extends React.Component {
     });
   }
 
-  _renderCob(msgId, cornCobRootEl) {
-    ReactDOM.render(
-        <CornCob
-          tags={this.props.tags[msgId]}
-          onFilterByTag={this.props.onFilterByTag}
-          onThumbsUp={this.handleThumbsUp}
-          onAddTag={this.handleAddTag} />
-      , cornCobRootEl);
-  }
-
   render() {
+    let result = [];
+
     var allTags = this.props.tags;
     var scrollAdjustment = 0;
     var msgs = $('div.actionable-msg-container');
     _.each(msgs, (msg, key) => {
-      var msgHeight = msg.offsetHeight;
-      var msgLineDiv = $(msg).find('div.msg-line');
-      var hasMsgLineDiv = msgLineDiv.length;
-      if (hasMsgLineDiv) {
-        var msgId = $(msgLineDiv).data('mid');
-        var tags = allTags[msgId];
-        var hasCornCobRootEl = $(msg).find('div.CORN-cob').length;
-        if (!hasCornCobRootEl) {
-          // Render for the first time
-          var msgDivs = $(msg).children('div');
-          $(msg).html('');
-          var htmlStructure = "<div>";
-          htmlStructure += '<div class="CORN-msg" style="width: 85%; float: left;"></div>';
-          htmlStructure += '<div class="CORN-cob" style="width: 15%; float: right; word-wrap:break-word;"></div>';
-          htmlStructure += '<div class="CORN-clear" style="clear:both;"></div>';
-          htmlStructure += '</div>';
-          $(msg).append($(htmlStructure));
-          $(msg).find('div.CORN-msg').append(msgDivs);
+      try {
+        var msgHeight = msg.offsetHeight;
+        var msgLineDiv = $(msg).find('div.msg-line');
+        var hasMsgLineDiv = msgLineDiv.length;
+        if (hasMsgLineDiv) {
+          var msgId = $(msgLineDiv).data('mid');
+          var tags = allTags[msgId];
+
+          // Re-render into the root el
+          result.push(
+            <CornCobPortal msgEl={msg}>
+              <CornCob
+                tags={this.props.tags[msgId]}
+                onFilterByTag={this.props.onFilterByTag}
+                onThumbsUp={this.handleThumbsUp}
+                onAddTag={this.handleAddTag} />
+            </CornCobPortal>
+          );
+
+          // The cob may wrap hipchat msg down a line, necessitating a scroll.
+          var newMsgHeight = $(msg)[0].offsetHeight;
+          var heightDiff = newMsgHeight - msgHeight;
+          scrollAdjustment += heightDiff;
         }
-
-        // Re-render into the root el
-        const cornCobRootEl = $(msg).find('div.CORN-cob')[0];
-        this._renderCob(msgId, cornCobRootEl);
-
-        // The cob may wrap hipchat msg down a line, necessitating a scroll.
-        var newMsgHeight = $(msg)[0].offsetHeight;
-        var heightDiff = newMsgHeight - msgHeight;
-        scrollAdjustment += heightDiff;
+      }
+      catch(err) {
+        log("Error rendering cob: " + err);
       }
     });
     if (scrollAdjustment != 0) {
@@ -79,7 +70,7 @@ class CornCobs extends React.Component {
       // Scroll down to account for the extra height added.
       $('div.hc-chat-scrollbox')[0].scrollTop += scrollAdjustment;
     }
-    return null;
+    return result;
   }
 }
 
