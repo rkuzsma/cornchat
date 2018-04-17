@@ -38,6 +38,19 @@ https://localhost:8080/healthcheck.js
 
 Start HipChat. You'll get hot module replacement, too.
 
+To debug in the HipChat Web UI, load the HipChat web app and run this in the console:
+```
+var cornstyles = document.createElement('link');
+cornstyles.setAttribute('href', 'https://localhost:8080/cornchat.css');
+cornstyles.setAttribute('rel', 'stylesheet');
+cornstyles.setAttribute('type', 'text/css');
+document.head.appendChild(cornstyles);
+var cornchat = document.createElement('script');
+cornchat.setAttribute('src','https://localhost:8080/bundle.js');
+document.head.appendChild(cornchat);
+```
+You'll need to browse to `https://localhost:8080/bundle.js` and accept the TLS cert, first.
+
 ### Deploy
 The app is hosted on github pages:
 https://rkuzsma.github.io/cornchat/bundle.js

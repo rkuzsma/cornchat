@@ -16,9 +16,11 @@ class AddTagDialog extends React.Component {
   }
 
   handleAddTag() {
+    log("AddTagDialog: handleAddTag()");
     this.props.onAddTag({
       name: this.state.tagName
     });
+    log("AddTagDialog: handleAddTag -- onClose");
     this.props.onClose();
   }
 

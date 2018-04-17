@@ -8,10 +8,7 @@ class Tags extends React.Component {
   }
 
   render() {
-    if (!this.props.tags) {
-      log("No tags to render");
-      return null;
-    }
+    if (!this.props.tags) return null;
     const tagItems = this.props.tags.map((tag) =>
       <Tag
         tag={tag}

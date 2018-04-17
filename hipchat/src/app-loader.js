@@ -6,6 +6,7 @@ import CornChatUser from './cornchat-user';
 
 // For dev, run dev server with "npm run start:dev"
 (function () {
+  log("----------------");
   log("Loading CornChat");
   if (module.hot) { // run with "npm run start:dev" to enable
     module.hot.accept();

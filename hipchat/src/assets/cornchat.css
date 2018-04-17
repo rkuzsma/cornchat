@@ -15,7 +15,6 @@
 }
 .CORN-addTagDialog {
   position:absolute;
-  display:none;
   top: -30px;
   z-index: 50;
   background: white;

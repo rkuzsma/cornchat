@@ -19,7 +19,8 @@ class AddTagButton extends React.Component {
 
   render() {
     return (
-      <span className='CORN-addTag' onClick={this.toggleAddTagDialog}>+
+      <span>
+        <span className='CORN-addTag' onClick={this.toggleAddTagDialog}>+</span>
         <AddTagDialog
           show={this.state.isShowAddTagDialog}
           onClose={this.toggleAddTagDialog}
