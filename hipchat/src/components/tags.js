@@ -15,7 +15,7 @@ class Tags extends React.Component {
         onFilterByTag={this.props.onFilterByTag} />
     );
     return (
-      <span>
+      <span className='CORN-tags'>
         {tagItems}
       </span>
     )

@@ -13,11 +13,12 @@ class CornCobs extends React.Component {
 
   render() {
     if (!this.props.msgElements) return null;
-
+    
     const cobs = this.props.msgElements.map((item) =>
       <CornCobPortal msgEl={item.msgEl} key={item.msgId} >
         <CornCob
           tags={this.props.tags[item.msgId]}
+          thumbs={this.props.thumbs[item.msgId]}
           onFilterByTag={this.props.onFilterByTag}
           onThumbsUp={this.props.onThumbsUp}
           onAddTag={this.props.onAddTag}
@@ -30,6 +31,7 @@ class CornCobs extends React.Component {
 
 CornCobs.propTypes = {
   tags: PropTypes.object.isRequired,
+  thumbs: PropTypes.object.isRequired,
   msgElements: PropTypes.object.isRequired,
   onFilterByTag: PropTypes.func.isRequired,
   onThumbsUp: PropTypes.func.isRequired,

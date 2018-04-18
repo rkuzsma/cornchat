@@ -10,6 +10,13 @@ class CornCob extends React.Component {
     super(props);
     this.handleThumbsUp = this.handleThumbsUp.bind(this);
     this.handleAddTag = this.handleAddTag.bind(this);
+    this.state = {
+      isSavingTags: false
+    };
+  }
+
+  static getDerivedStateFromProps(nextProps, prevState) {
+    return({isSavingTags: false});
   }
 
   handleThumbsUp() {
@@ -17,14 +24,21 @@ class CornCob extends React.Component {
   }
 
   handleAddTag(tag) {
+    this.setState({isSavingTags: true});
     this.props.onAddTag(tag, this.props.msgId);
   }
 
   render() {
+    const addTagButton = this.state.isSavingTags ? (
+      <span className="saving"><span>.</span><span>.</span><span>.</span></span>
+    ) : (
+      <AddTagButton onAddTag={this.handleAddTag} />
+    );
+
     return(
       <div ref={this.cornCobRef}>
-        <ThumbsUpButton onThumbsUp={this.handleThumbsUp} />
-        <AddTagButton onAddTag={this.handleAddTag} />
+        <ThumbsUpButton onThumbsUp={this.handleThumbsUp} thumbs={this.props.thumbs} />
+        {addTagButton}
         <Tags tags={this.props.tags} onFilterByTag={this.props.onFilterByTag} />
       </div>
     );
@@ -33,6 +47,7 @@ class CornCob extends React.Component {
 
 CornCob.propTypes = {
   tags: PropTypes.object,
+  thumbs: PropTypes.string,
   onFilterByTag: PropTypes.func.isRequired,
   msgId: PropTypes.string,
   onAddTag: PropTypes.func.isRequired,
