@@ -33,6 +33,19 @@ class MsgInfoStore {
     return this.msgInfo.tags;
   }
 
+  // returns e.g.:
+  // {
+  //  "Red": {name: "Red"},
+  //  "Blue": {name: "Blue"},
+  //  "Green": {name: "Green"}}
+  recentDistinctTagsByName() {
+    const distinctTags = {};
+    Object.values(this.msgInfo.tags).forEach(tags => {
+      tags.forEach(tag => distinctTags[tag.name] = tag);
+    });
+    return distinctTags;
+  }
+
   // Returns most recently fetched thumbs counts in the form:
   // {"699a1266-c937-44d8-bf54-2fa40c59005c": '2',
   //  "deadbeef-c937-44d8-bf54-bf54bf54bf54": ''
@@ -82,7 +95,7 @@ class MsgInfoStore {
     // Also wire up a poller to check for new tags in this room
     // TODO Cache this better, perhaps send a 'updated_since' timestamp instead of all msgIds
     window.setInterval(() => {
-      log("MsgInfoStore: Polling for new msg info on existing messages");
+      log("MsgInfoStore: Polling for new msg info on existing messages every " + Constants.tag_fetch_loop_interval + "ms");
       const msgIds = this.msgStore.recentElements().map((item) => item.msgId);
       this._updateMsgInfo(msgIds);
     }, Constants.tag_fetch_loop_interval);

@@ -8,7 +8,11 @@ let _currentAuthenticatedUser = {};
 class CornChatUser {
 
   static getApiToken() {
-    return window.localStorage.getItem("CORN_token");
+    let token = window.localStorage.getItem("CORN_token");
+    if (!token) {
+      token = '';
+    }
+    return token;
   }
 
   static setApiToken(apiToken) {
@@ -34,6 +38,10 @@ class CornChatUser {
   }
 
   static authenticateUser(apiToken, fn) {
+    if (!apiToken || apiToken === '') {
+      log("CornChatUser: No API Token");
+      throw("No API Token");
+    }
     ApiToken.loginWithApiToken(apiToken, function(err, aws) {
       try {
         if (err) {

@@ -21,10 +21,11 @@ class AddTagButton extends React.Component {
     return (
       <span>
         <span className='CORN-addTag' onClick={this.toggleAddTagDialog}>+</span>
-        <AddTagDialog
-          show={this.state.isShowAddTagDialog}
-          onClose={this.toggleAddTagDialog}
-          onAddTag={this.props.onAddTag} />
+          <AddTagDialog
+            show={this.state.isShowAddTagDialog}
+            onClose={this.toggleAddTagDialog}
+            onAddTag={this.props.onAddTag}
+            recentTagNames={this.props.recentTagNames} />
       </span>
     );
   }
@@ -32,6 +33,7 @@ class AddTagButton extends React.Component {
 
 AddTagButton.propTypes = {
   onAddTag: PropTypes.func.isRequired,
+  recentTagNames: PropTypes.array
 };
 
 export default AddTagButton;

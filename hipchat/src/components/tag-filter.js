@@ -45,6 +45,7 @@ class TagFilter extends React.Component {
 
   render() {
     if (this.props.tag) {
+      this.clearFilterByTag();
       this.filterByTag(this.props.tag.name);
     }
     else {

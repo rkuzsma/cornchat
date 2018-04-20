@@ -32,7 +32,7 @@ class CornCob extends React.Component {
     const addTagButton = this.state.isSavingTags ? (
       <span className="saving"><span>.</span><span>.</span><span>.</span></span>
     ) : (
-      <AddTagButton onAddTag={this.handleAddTag} />
+      <AddTagButton onAddTag={this.handleAddTag} recentTagNames={this.props.recentTagNames} />
     );
 
     return(
@@ -46,12 +46,13 @@ class CornCob extends React.Component {
 }
 
 CornCob.propTypes = {
-  tags: PropTypes.object,
+  tags: PropTypes.array,
   thumbs: PropTypes.string,
   onFilterByTag: PropTypes.func.isRequired,
   msgId: PropTypes.string,
   onAddTag: PropTypes.func.isRequired,
-  onThumbsUp: PropTypes.func.isRequired
+  onThumbsUp: PropTypes.func.isRequired,
+  recentTagNames: PropTypes.array
 };
 
 export default CornCob;

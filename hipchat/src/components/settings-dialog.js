@@ -23,6 +23,7 @@ class SettingsDialog extends React.Component {
     this.handleError = this.handleError.bind(this);
     this.handleStatus = this.handleStatus.bind(this);
     this.generateToken = this.generateToken.bind(this);
+    this.clearAnySuccessMsgTimer = this.clearAnySuccessMsgTimer.bind(this);
   }
 
   handleTokenChange(event) {
@@ -30,11 +31,11 @@ class SettingsDialog extends React.Component {
   }
 
   handleSubmit(event) {
+    event.preventDefault();
     this.props.onSettingsChanged({
       token: this.state.token
     });
     this.props.onClose();
-    event.preventDefault();
   }
 
   handleError(errorMsg) {
@@ -45,15 +46,22 @@ class SettingsDialog extends React.Component {
     this.setState({statusMsg: statusMsg});
   }
 
-  handleSuccess(successMsg) {
-    log(`handleSuccess(${successMsg})`);
-    this.setState({successMsg: successMsg});
-    // Clear the success message in 5s
+  componentWillUnmount() {
+    this.clearAnySuccessMsgTimer();
+  }
+
+  clearAnySuccessMsgTimer() {
     if (this.state.successMsgExpiry) {
-      log(`handleSuccess: clearTimeout`);
+      log(`SettingsDialog: clearTimeout`);
       window.clearTimeout(this.state.successMsgExpiry);
     }
-    log(`handleSuccess: setTimeout`);
+  }
+
+  handleSuccess(successMsg) {
+    this.setState({successMsg: successMsg});
+    // Clear the success message in 5s
+    this.clearAnySuccessMsgTimer();
+    log(`SettingsDialog: setTimeout`);
     var expiry = window.setTimeout(() => {
       log(`handleSuccess: timeout reached, resetting successMsg`);
       this.setState({successMsg: ''});
@@ -61,7 +69,8 @@ class SettingsDialog extends React.Component {
     this.setState({successMsgExpiry: expiry});
   }
 
-  generateToken() {
+  generateToken(event) {
+    event.preventDefault();
     var email = prompt("Please enter your e-mail address:", "");
     if (email == null || email == "") {
         return;
@@ -133,7 +142,7 @@ SettingsDialog.propTypes = {
   onClose: PropTypes.func.isRequired,
   onSettingsChanged: PropTypes.func.isRequired,
   show: PropTypes.bool,
-  token: PropTypes.string
+  token: PropTypes.string.isRequired
 };
 
 export default SettingsDialog;

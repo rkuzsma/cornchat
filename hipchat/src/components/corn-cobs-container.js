@@ -12,7 +12,8 @@ class CornCobsContainer extends React.Component {
     this.state = {
       msgElements: [],
       tags: {},
-      thumbs: {}
+      thumbs: {},
+      recentTagNames: []
     }
     this.msgElementStore = new MsgElementsStore();
     this.msgInfoStore = new MsgInfoStore();
@@ -48,6 +49,7 @@ class CornCobsContainer extends React.Component {
     this.setState({
       msgElements: this.msgElementStore.recentElements(),
       tags: this.msgInfoStore.recentTags(),
+      recentTagNames: Object.keys(this.msgInfoStore.recentDistinctTagsByName()),
       thumbs: this.msgInfoStore.recentThumbs()
     });
     this.msgElementStoreListener = {onElementsChanged: ((prevElements, currentElements) => {
@@ -57,11 +59,16 @@ class CornCobsContainer extends React.Component {
     this.msgInfoStoreListener = {
       onTagsChanged: ((prev, current) => {
         log("CornCobsContainer: updating tags");
-        this.setState({tags: current});
+        this.setState({
+          tags: current,
+          recentTagNames: Object.keys(this.msgInfoStore.recentDistinctTagsByName())
+        });
       }),
       onThumbsChanged: ((prev, current) => {
         log("CornCobsContainer: updating thumbs");
-        this.setState({thumbs: current});
+        this.setState({
+          thumbs: current
+        });
       })
     };
     this.msgElementStore.addListener(this.msgElementStoreListener);
@@ -80,7 +87,8 @@ class CornCobsContainer extends React.Component {
       msgElements={this.state.msgElements}
       onFilterByTag={this.props.onFilterByTag}
       onThumbsUp={this.handleThumbsUp}
-      onAddTag={this.handleAddTag} />);
+      onAddTag={this.handleAddTag}
+      recentTagNames={this.state.recentTagNames} />);
   }
 }
 

@@ -17,13 +17,30 @@
   cursor: pointer;
 }
 .CORN-addTagDialog {
-  position:absolute;
-  top: -30px;
+  position:relative;
+  display: block;
+  top: 0px;
+  left: 0px;
   z-index: 50;
   background: white;
   border:solid 1px #000;
   margin: 2px;
+  height: 100px;
 }
+
+.topcoat-text-input {
+  width: 100%;
+}
+li.hover {
+  background: #585858;
+}
+.topcoat-addme::before {
+  content: 'Add me: '
+}
+.topcoat-addme {
+  text-align: right;
+}
+
 .CORN-logo {
   cursor: pointer;
   margin-left: 10px;

@@ -2,8 +2,8 @@ import Constants from './constants';
 import log from './logger';
 import AWS from 'aws-sdk';
 
-export default {
-  generateToken: function(email, fn) {
+class ApiToken {
+  static _withPoolId(poolId, fn) {
     try {
       AWS.config.update({
         region: 'us-east-1',
@@ -13,27 +13,62 @@ export default {
       });
       AWS.config.getCredentials(function(err) {
         if (err) {
+          log("Retrying 1 time to get pool creds");
+          try {
+            AWS.config.getCredentials(function(err) {
+              fn(err);
+            });
+          }
+          catch(err) {
+            log("Error in _withPoolId: " + err);
+            fn(err);
+          }
+        }
+        else {
+          fn(null);
+        }
+      });
+    }
+    catch(err) {
+      log("Error in generateToken: " + err);
+      log(err.stack);
+      fn(err);
+    }
+  }
+
+  static generateToken(email, fn) {
+    try {
+      this._withPoolId(Constants.cornchat_identity_pool_id, function(err) {
+        if (err) {
+          log("Failed to establish pool ID creds");
           fn(err, null);
         }
         else {
-          var lambda = new AWS.Lambda();
-          lambda.invoke({
-            FunctionName: 'LambdAuthGenerateApiToken',
-            Payload: JSON.stringify({
-              email: email
-            })
-          }, fn);
+          try {
+            var lambda = new AWS.Lambda();
+            lambda.invoke({
+              FunctionName: 'LambdAuthGenerateApiToken',
+              Payload: JSON.stringify({
+                email: email
+              })
+            }, fn);
+          }
+          catch(err) {
+            log("Error in lambda invocation of generateToken: " + err);
+            log(err.stack);
+            fn(err, null);
+          }
         }
-      })
+      });
     }
     catch(err) {
       log("Error in generateToken: " + err);
       log(err.stack);
       fn(err, null);
     }
-  },
+  }
 
-  loginWithApiToken: function(apiToken, fn) {
+  static loginWithApiToken(apiToken, fn) {
     const updateAwsConfig = function() {
       AWS.config.update({
         region: 'us-east-1',
@@ -44,26 +79,46 @@ export default {
     }
 
     const withAwsConfig = function(fn) {
-      updateAwsConfig();
-      AWS.config.getCredentials(function(err) {
-        if (err) {
-          // retry
-          log("Refreshing stale credentials config");
-          updateAwsConfig();
-          AWS.config.getCredentials(function(err) {
-            fn(err);
-          });
-        }
-        else {
-          fn(null);
-        }
-      });
+      try {
+        updateAwsConfig();
+        AWS.config.getCredentials(function(err) {
+          if (err) {
+            // retry
+            log("Refreshing stale credentials config");
+            updateAwsConfig();
+            try {
+              AWS.config.getCredentials(function(err) {
+                if(err) {
+                  fn(err);
+                }
+                else {
+                  fn(null);
+                }
+              });
+            }
+            catch(err) {
+              log("Error getting credentials in withAwsConfig: " + err);
+              log(err.stack);
+              fn(err);
+            }
+          }
+          else {
+            fn(null);
+          }
+        });
+      }
+      catch(err) {
+        log("Error in withAwsConfig: " + err);
+        log(err.stack);
+        fn(err, null);
+      }
     }
 
     try {
       withAwsConfig(function(err) {
         try {
           if (err) {
+            log("Error in loginWithApiToken: " + err);
             throw err;
           }
           var lambda = new AWS.Lambda();
@@ -101,3 +156,5 @@ export default {
     }
   }
 }
+
+export default ApiToken;

@@ -13,7 +13,8 @@ class App extends React.Component {
     super(props);
     this.state = {
       isShowSettings: false,
-      tagFilter: null
+      tagFilter: null,
+      apiToken: CornChatUser.getApiToken()
     };
     this.toggleSettingsDialog = this.toggleSettingsDialog.bind(this);
     this.onSettingsChanged = this.onSettingsChanged.bind(this);

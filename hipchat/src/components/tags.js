@@ -23,7 +23,7 @@ class Tags extends React.Component {
 }
 
 Tags.propTypes = {
-  tags: PropTypes.object,
+  tags: PropTypes.array,
   onFilterByTag: PropTypes.func.isRequired
 };
 
