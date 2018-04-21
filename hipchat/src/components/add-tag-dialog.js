@@ -1,7 +1,9 @@
 import log from '../logger';
 import PropTypes from 'prop-types';
 import MsgInfoStore from '../msg-info-store';
-import {Typeahead} from 'react-typeahead';
+import { Creatable } from 'react-select';
+import 'react-select/dist/react-select.css';
+import ClickOutside from 'react-click-outside';
 
 class AddTagDialog extends React.Component {
   constructor(props) {
@@ -10,38 +12,28 @@ class AddTagDialog extends React.Component {
     this.state = {
       tagName: ''
     };
-    this.handleTagNameChange = this.handleTagNameChange.bind(this);
-    this.handleAddTag = this.handleAddTag.bind(this);
     this.handleKeyUp = this.handleKeyUp.bind(this);
     this.handleOptionSelected = this.handleOptionSelected.bind(this);
+    this.clickOutside = this.clickOutside.bind(this);
   }
 
-  handleTagNameChange(event) {
-    this.setState({tagName: event.target.value});
+  clickOutside() {
+    this.props.onClose();
   }
 
   handleOptionSelected(option) {
-    if (option !== '') {
-      this.setState({tagName: option});
+    const selectedTagName = option.value;
+    if (selectedTagName !== '') {
+      this.setState({tagName: selectedTagName});
       this.props.onAddTag({
-        name: option
-      });
-      this.props.onClose();
-    }
-  }
-
-  handleAddTag() {
-    if (this.state.tagName !== '') {
-      this.props.onAddTag({
-        name: this.state.tagName
+        name: selectedTagName
       });
       this.props.onClose();
     }
   }
 
   handleKeyUp(e) {
-    if (e.key === 'Enter') this.handleAddTag();
-    else if (e.key === 'Escape') this.props.onClose();
+    if (e.key === 'Escape') this.props.onClose();
   }
 
   render() {
@@ -51,22 +43,18 @@ class AddTagDialog extends React.Component {
 
     return (
       <div className='CORN-addTagDialog' onKeyUp={this.handleKeyUp} >
-        <form>
-          <Typeahead
-            options={this.props.recentTagNames}
-            maxVisible={2}
-            value={this.state.tagName}
-            onOptionSelected={this.handleOptionSelected}
-            onChange={this.handleTagNameChange}
-            showOptionsWhenEmpty={true}
-            inputProps={{autoFocus:true}}
-          />
-          <br/>
-          <br/>
-          <br/>
-          <input type='button' value='Add Tag' default='true' onClick={this.handleAddTag} />
-          <input type='button' value='x' cancel='true' onClick={this.props.onClose} /><br/>
-        </form>
+        <ClickOutside onClickOutside={this.clickOutside}>
+          <div>
+            <Creatable
+              className='CORN-Select is-clearable is-searchable Select--single'
+              placeholder='Add a tag...'
+              options={this.props.recentTagNames.map((tagName) => { return {value: tagName, label: tagName} })}
+              value={this.state.tagName}
+              onChange={this.handleOptionSelected}
+              autoFocus={true}
+            />
+          </div>
+        </ClickOutside>
       </div>
     );
   }

@@ -13,11 +13,7 @@ class Tag extends React.Component {
 
   render() {
     return (
-      <span className='CORN-tag' onClick={this.handleFilterByTag}>
-        <span>
-          {this.props.tag.name}
-        </span>
-      </span>
+      <div className='CORN-tag' onClick={this.handleFilterByTag}>{this.props.tag.name}</div>
     );
   }
 }

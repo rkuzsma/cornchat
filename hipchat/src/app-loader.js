@@ -2,7 +2,6 @@ import log from './logger';
 import React from "react";
 import ReactDOM from "react-dom";
 import App from './app';
-import CornChatUser from './cornchat-user';
 
 // For dev, run dev server with "npm run start:dev"
 (function () {
@@ -24,9 +23,7 @@ import CornChatUser from './cornchat-user';
         $('body').append(rootEl);
         return document.getElementById('CORN_rootEl');
       }
-      let el = rootEl();
-      log("Rendering App into " + el);
-      ReactDOM.render(<App />, el);
+      ReactDOM.render(<App />, rootEl());
     }
     catch(err) {
       log("Error rendering app: " + err);

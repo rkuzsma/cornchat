@@ -1,4 +1,7 @@
 {
   "presets": ["env", "react"],
-  "plugins": ["dynamic-import-webpack", "transform-runtime", "transform-strict-mode"]
+  "plugins": ["react-hot-loader/babel",
+    "dynamic-import-webpack",
+    "transform-runtime",
+    "transform-strict-mode"]
 }

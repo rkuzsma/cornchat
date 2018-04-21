@@ -1,5 +1,6 @@
 import log from '../logger';
 import ReactDOM from "react-dom";
+import PropTypes from 'prop-types';
 
 // Render a corn cob into a single HipChat message's div.actionable-msg-container element
 class CornCobPortal extends React.Component {
@@ -23,9 +24,11 @@ class CornCobPortal extends React.Component {
       this.beforeHeight = $(msgEl)[0].parentElement.offsetHeight;
       var msgDivs = $(msgEl).children('div');
       $(msgEl).html('');
-      var htmlStructure = "<div>";
-      htmlStructure += '<div class="CORN-msg" style="width: 85%; float: left;"></div>';
-      htmlStructure += '<div class="CORN-cob" style="width: 15%; float: right; word-wrap:break-word;"></div>';
+      var htmlStructure = "<div class='CORN-msgContainer'>";
+      htmlStructure += '<div class="CORN-msg" style="width: 90%; float: left;">';
+      htmlStructure += '<div class="CORN-tags-portal"></div>';
+      htmlStructure += '</div>';
+      htmlStructure += '<div class="CORN-cob" style="width: 10%; float: right; word-wrap:break-word;"></div>';
       htmlStructure += '<div class="CORN-clear" style="clear:both;"></div>';
       htmlStructure += '</div>';
       $(msgEl).append($(htmlStructure));
@@ -34,5 +37,9 @@ class CornCobPortal extends React.Component {
     return $(msgEl).find('div.CORN-cob')[0];
   }
 }
+
+CornCobPortal.propTypes = {
+  msgEl: PropTypes.object.isRequired
+};
 
 export default CornCobPortal;

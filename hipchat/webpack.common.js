@@ -7,7 +7,8 @@ module.exports = {
   entry: './src/app-loader.js',
   output: {
     filename: 'bundle.js',
-    path: path.resolve(__dirname, 'dist')
+    path: path.resolve(__dirname, 'dist'),
+    publicPath: '/'
   },
   mode: 'development',
   module: {
@@ -19,6 +20,10 @@ module.exports = {
             loader: 'base64-inline-loader?limit=1000&name=[name].[ext]'
           }
         ]
+      },
+      {
+        test: /\.css$/,
+        use: [ 'style-loader', 'css-loader' ]
       },
       {
         test: /\.(js|jsx)$/,

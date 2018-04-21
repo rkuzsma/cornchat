@@ -23,6 +23,7 @@ class CornCobs extends React.Component {
           onThumbsUp={this.props.onThumbsUp}
           onAddTag={this.props.onAddTag}
           msgId={item.msgId}
+          msgEl={item.msgEl}
           recentTagNames={this.props.recentTagNames} />
       </CornCobPortal>
     );

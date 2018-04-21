@@ -1,3 +1,4 @@
+import './assets/cornchat.css';
 import log from './logger';
 import LogoPortal from './components/logo-portal';
 import Logo from './components/logo';
@@ -9,6 +10,7 @@ import CornChatUser from './cornchat-user';
 import React from "react";
 import ReactDOM from "react-dom";
 import ApiToken from './api-token';
+import { hot } from 'react-hot-loader';
 
 // The app's main run loop. App-Loader invokes the loop iteratively.
 class App extends React.Component {
@@ -76,4 +78,4 @@ class App extends React.Component {
 
 }
 
-export default App;
+export default hot(module)(App);

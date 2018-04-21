@@ -1,13 +1,38 @@
-.CORN-tag {
-  display:inline-block;
+.CORN-msgContainer:hover {
+  border: 1px solid blue;
 }
-.CORN-tag span {
-  border-radius:4px 4px 4px 4px;
-  border:solid 1px #000;
-  background-color:#acf;
-  padding:5px;
-  font-size: 50%;
+.CORN-msgContainer {
+  border: 1px solid transparent;
+}
+body {
+    font-size: 14px;
+    font-family: Helvetica Neue, Helvetica, Arial, sans-serif;
+}
+.CORN-tag {
+  font-size: 80%;
+  color: #000000;
   cursor: pointer;
+  display: inline-block;
+  height: 20px;
+  padding-left: 2px;
+  padding-right: 2px;
+  position: relative;
+  background: #FFFFCC;
+  line-height: 20px;
+  vertical-align: middle;
+  margin-right: 10px;
+  border-left: 2px solid green;
+}
+.CORN-tag:before {
+  content: "";
+  position: absolute;
+  right: -10px;
+  bottom: 0;
+  width: 0;
+  height: 0;
+  border-left: 10px solid #FFFFCC;
+  border-top: 10px solid transparent;
+  border-bottom: 10px solid transparent;
 }
 .CORN-addTag {
   border-radius:4px 4px 4px 4px;
@@ -21,16 +46,17 @@
   display: block;
   top: 0px;
   left: 0px;
-  z-index: 50;
   background: white;
-  border:solid 1px #000;
-  margin: 2px;
+  border-radius: 5px;
+  border: 3px solid green;
+  padding: 4px;
 }
 
-.typeahead-selector {
-  list-style-type: none;
-  padding-left: 10px;
+.Select, .CORN-Select {
+  display: inline-block;
+  width: 200px;
 }
+
 
 .CORN-logo {
   cursor: pointer;
@@ -55,6 +81,10 @@
 }
 .CORN-dialog div {
   margin: 10px 10px 10px 10px;
+}
+.CORN-input {
+  padding: 8px;
+  margin-right: 2px;
 }
 .CORN-clearfix::after {
   content: "";
