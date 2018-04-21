@@ -6,7 +6,8 @@ class Logo extends React.Component {
   render() {
     return (
       <div onClick={this.props.onClick} className="CORN-logo">
-        <img src={cornImage} height="32" width="32" /> CornChat</div>
+        <img src={cornImage} height="32" width="32" /> CornChat
+      </div>
     );
   }
 }

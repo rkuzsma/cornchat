@@ -10,8 +10,12 @@
   </div>
   <table>
     <tr>
-      <td>Email</td>
-      <td><input type="email" id="email" size="20">
+      <td>HipChat User ID</td>
+      <td><input type="hipchatUserId" id="hipchatUserId" size="20">
+    </tr>
+    <tr>
+      <td>HipChat OAuth Access Token</td>
+      <td><input type="hipchatOauthAccessToken" id="hipchatOauthAccessToken" size="20">
     </tr>
     <tr>
       <td colspan="2">
@@ -21,38 +25,44 @@
   </table>
   <script>
   var info = document.getElementById('info');
-  var email = document.getElementById('email');
+  var hipchatUserId = document.getElementById('hipchatUserId');
+  var hipchatOauthAccessToken = document.getElementById('hipchatOauthAccessToken');
   var generateButton = document.getElementById('generate-button');
   generateButton.addEventListener('click', function() {
     info.innerHTML = 'Generating token...';
-		if (email.value == null || email.value == '') {
-    	info.innerHTML = 'ERROR: Please specify your email address.';
-    } else {
-      var input = {
-        email: email.value
-      };
-      AWS.config.update({
-        region: '<REGION>',
-        credentials: new AWS.CognitoIdentityCredentials({
-          IdentityPoolId: '<IDENTITY_POOL_ID>'
-        })
-      });
-      var lambda = new AWS.Lambda();
-      lambda.invoke({
-        FunctionName: 'LambdAuthGenerateApiToken',
-        Payload: JSON.stringify(input)
-      }, function(err, data) {
-        if (err) console.log(err, err.stack);
-        else {
-          var output = JSON.parse(data.Payload);
-          if (output.created) {
-            info.innerHTML = 'API Token: ' + JSON.stringify(output.apiToken);
-          } else {
-            info.innerHTML = 'API Token <b>not</b> generated.';
-          }
-        }
-      });
+		if (hipchatUserId.value == null || hipchatUserId.value == '') {
+    	info.innerHTML = 'ERROR: Please specify your HipChat User ID.';
+      return;
     }
+    if (hipchatOauthAccessToken.value == null || hipchatOauthAccessToken.value == '') {
+    	info.innerHTML = 'ERROR: Please specify your HipChat OAuth Access Token.';
+      return;
+    }
+    var input = {
+      hipchatUserId: hipchatUserId.value,
+      hipchatOauthAccessToken: hipchatOauthAccessToken.value
+    };
+    AWS.config.update({
+      region: '<REGION>',
+      credentials: new AWS.CognitoIdentityCredentials({
+        IdentityPoolId: '<IDENTITY_POOL_ID>'
+      })
+    });
+    var lambda = new AWS.Lambda();
+    lambda.invoke({
+      FunctionName: 'LambdAuthGenerateApiToken',
+      Payload: JSON.stringify(input)
+    }, function(err, data) {
+      if (err) console.log(err, err.stack);
+      else {
+        var output = JSON.parse(data.Payload);
+        if (output.created) {
+          info.innerHTML = 'API Token: ' + JSON.stringify(output.apiToken);
+        } else {
+          info.innerHTML = 'API Token <b>not</b> generated.';
+        }
+      }
+    });
   });
   </script>
 </body>

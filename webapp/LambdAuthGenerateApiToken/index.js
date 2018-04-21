@@ -1,21 +1,32 @@
 console.log('Loading function');
 
-// dependencies
 var AWS = require('aws-sdk');
 var config = require('./config.json');
-
-// Get reference to AWS clients
 var dynamodb = new AWS.DynamoDB();
+var https = require('https');
 
-function storeApiToken(email, apiToken, fn) {
+
+// Generates a CornChat API token for a given HipChat User ID and OAuth Access Token.
+// Validates the HipChat User with HipChat.
+//
+// Live test page for the lambda is hosted at https://cornchat.s3.amazonaws.com/generateToken.html
+//
+// Deploy using ./deploy.sh
+//
+// Find your HipChat ID and Access Token by logging into the HipChat Web UI and inspecting
+// in the dev tools console:
+//   window.HC.ApplicationStore.data.config.oauth_token
+//   window.HC.ApplicationStore.data.config.user_id
+//
+function storeApiToken(hipchatUserId, apiToken, fn) {
 	dynamodb.putItem({
 		TableName: config.DDB_TOKENS_TABLE,
 		Item: {
 			apiToken: {
 				S: apiToken
 			},
-			email: {
-				S: email
+			hipchatUserId: {
+				S: hipchatUserId+''
 			}
 		},
 		ConditionExpression: 'attribute_not_exists (email)'
@@ -32,27 +43,78 @@ function uuidv4() {
 	});
 }
 
-exports.handler = function(event, context) {
-	var email = event.email;
-	var apiToken = uuidv4();
+function validateHipchatIdentity(hipchatUserId, hipchatOauthAccessToken, fn) {
+	console.log("Validating HipChat OAuth Access Token");
+	var body='';
 
-	storeApiToken(email, apiToken, function(err) {
-		if (err) {
-			if (err.code == 'ConditionalCheckFailedException') {
-				// userId already found
-				context.succeed({
-					created: false
-				});
-			} else {
-				context.fail('Error in storeUser: ' + err);
+	var options = {
+			host: 'api.hipchat.com',
+			path: '/v2/oauth/token/' + hipchatOauthAccessToken,
+			method: 'GET',
+			headers: {
+					'Content-Type': 'application/json',
+					'Authorization': 'Bearer ' + hipchatOauthAccessToken
 			}
-		} else {
-			console.log('Generated token for email: ' + email);
-			context.succeed({
-				created: true,
-				email: email,
-				apiToken: apiToken
-			});
+	};
+
+	var req = https.request(options, function(res) {
+		try {
+			if (res.statusCode != 200) {
+				console.log("Invalid HipChat OAuth Access Token. Received from HipChat server: " + res.statusCode);
+				fn(false);
+			}
+			else {
+				res.on('data', function (chunk) {
+						body += chunk;
+				});
+				res.on('end', function() {
+					var bodyObj = JSON.parse(body);
+					fn(bodyObj && bodyObj.owner && (bodyObj.owner.id +'') === (hipchatUserId+''));
+				});
+			}
 		}
+		catch(err) {
+			console.log("Error validating HipChat identity: "+ err);
+			fn(false);
+		}
+	});
+	req.on('error', function(err) {
+		console.log("Failed to validate HipChat identity: "+ err);
+		fn(false);
+	});
+	req.end();
+}
+
+exports.handler = function(event, context) {
+	var hipchatUserId = event.hipchatUserId;
+	var hipchatOauthAccessToken = event.hipchatOauthAccessToken;
+
+	validateHipchatIdentity(hipchatUserId, hipchatOauthAccessToken, function(success) {
+		if (!success) {
+			context.fail('Failed to validate OAuth Access Token.');
+			return;
+		}
+
+		var apiToken = uuidv4();
+
+		storeApiToken(hipchatUserId, apiToken, function(err) {
+			if (err) {
+				if (err.code == 'ConditionalCheckFailedException') {
+					// userId already found
+					context.succeed({
+						created: false
+					});
+				} else {
+					context.fail('Error in storeUser: ' + err);
+				}
+			} else {
+				console.log('Generated token for hipchatUserId: ' + apiToken);
+				context.succeed({
+					created: true,
+					hipchatUserId: hipchatUserId,
+					apiToken: apiToken
+				});
+			}
+		});
 	});
 }

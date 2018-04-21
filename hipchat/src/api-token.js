@@ -36,7 +36,13 @@ class ApiToken {
     }
   }
 
-  static generateToken(email, fn) {
+  static generateTokenForCurrentHipChatUser(fn) {
+    var hipchatUserId = window.HC.ApplicationStore.data.config.user_id;
+    var hipchatOauthAccessToken = window.HC.ApplicationStore.data.config.oauth_token;
+    ApiToken.generateToken(hipchatUserId, hipchatOauthAccessToken, fn);
+  }
+
+  static generateToken(hipchatUserId, hipchatOauthAccessToken, fn) {
     try {
       this._withPoolId(Constants.cornchat_identity_pool_id, function(err) {
         if (err) {
@@ -49,7 +55,8 @@ class ApiToken {
             lambda.invoke({
               FunctionName: 'LambdAuthGenerateApiToken',
               Payload: JSON.stringify({
-                email: email
+                hipchatUserId: hipchatUserId,
+                hipchatOauthAccessToken: hipchatOauthAccessToken
               })
             }, fn);
           }

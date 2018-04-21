@@ -71,15 +71,10 @@ class SettingsDialog extends React.Component {
 
   generateToken(event) {
     event.preventDefault();
-    var email = prompt("Please enter your e-mail address:", "");
-    if (email == null || email == "") {
-        return;
-    }
-
     this.handleError("");
     this.handleSuccess("");
-    this.handleStatus(`Generating token for ${email}. Please wait...`);
-    ApiToken.generateToken(email, (err, data) => {
+    this.handleStatus(`Generating token for ${hipchatUserId}. Please wait...`);
+    ApiToken.generateTokenForCurrentHipChatUser((err, data) => {
       this.handleStatus("");
       if (err) {
         log("Error generating token: " + err);
@@ -87,6 +82,7 @@ class SettingsDialog extends React.Component {
       }
       else {
         var output = JSON.parse(data.Payload);
+        log(data.Payload);
         if (output.created) {
           log("Generated token " + output.apiToken);
           this.handleSuccess("Generated a token.");
