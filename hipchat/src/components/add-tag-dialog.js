@@ -21,14 +21,22 @@ class AddTagDialog extends React.Component {
   }
 
   handleOptionSelected(option) {
-    alert(option);
+    if (option !== '') {
+      this.setState({tagName: option});
+      this.props.onAddTag({
+        name: option
+      });
+      this.props.onClose();
+    }
   }
 
   handleAddTag() {
-    this.props.onAddTag({
-      name: this.state.tagName
-    });
-    this.props.onClose();
+    if (this.state.tagName !== '') {
+      this.props.onAddTag({
+        name: this.state.tagName
+      });
+      this.props.onClose();
+    }
   }
 
   handleKeyUp(e) {
@@ -51,16 +59,7 @@ class AddTagDialog extends React.Component {
             onOptionSelected={this.handleOptionSelected}
             onChange={this.handleTagNameChange}
             showOptionsWhenEmpty={true}
-            allowCustomValues={true}
             inputProps={{autoFocus:true}}
-            customClasses={{
-              typeahead: "topcoat-list",
-              input: "topcoat-text-input",
-              results: "topcoat-list__container",
-              listItem: "topcoat-list__item",
-              token: "topcoat-button",
-              customAdd: "topcoat-addme"
-            }}
           />
           <br/>
           <br/>
