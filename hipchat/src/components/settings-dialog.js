@@ -73,7 +73,7 @@ class SettingsDialog extends React.Component {
     event.preventDefault();
     this.handleError("");
     this.handleSuccess("");
-    this.handleStatus(`Generating token for ${hipchatUserId}. Please wait...`);
+    this.handleStatus(`Generating CornChat API token. Please wait...`);
     ApiToken.generateTokenForCurrentHipChatUser((err, data) => {
       this.handleStatus("");
       if (err) {

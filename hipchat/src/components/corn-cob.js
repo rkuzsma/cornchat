@@ -48,7 +48,7 @@ class CornCob extends React.Component {
         <ThumbsUpButton onThumbsUp={this.handleThumbsUp} thumbs={this.props.thumbs} />
         {addTagButton}
         <TagsPortal msgEl={this.props.msgEl}>
-          <Tags tags={this.props.tags} onFilterByTag={this.props.onFilterByTag} />
+          <Tags msgEl={this.props.msgEl} tags={this.props.tags} onFilterByTag={this.props.onFilterByTag} />
         </TagsPortal>
       </div>
     );

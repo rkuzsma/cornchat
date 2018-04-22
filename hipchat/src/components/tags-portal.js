@@ -4,22 +4,18 @@ import PropTypes from 'prop-types';
 
 // Render tags above a specific msg line for which the tag is related.
 class TagsPortal extends React.Component {
+  constructor(props) {
+    super(props);
+    this.tagsRootEl = this.tagsRootEl.bind(this);
+  }
+
   render() {
-    return ReactDOM.createPortal(
-      this.props.children,
-      this.tagsRootEl(this.props.msgEl)
-    );
+    // The tags portal element is already injected onto the page via CornCobPortal
+    return ReactDOM.createPortal(this.props.children, this.tagsRootEl());
   }
 
-  componentDidMount() {
-    this.afterHeight = $(this.props.msgEl)[0].parentElement.offsetHeight;
-    const difference = this.afterHeight - this.beforeHeight;
-    $('div.hc-chat-scrollbox')[0].scrollTop += difference;
-  }
-
-  tagsRootEl(msgEl) {
-    // The tags portal element is injected onto the page via CornCobPortal
-    return $(msgEl).find('div.CORN-tags-portal')[0];
+  tagsRootEl() {
+    return $(this.props.msgEl).find('div.CORN-tags-portal')[0];
   }
 }
 
