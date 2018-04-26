@@ -11,17 +11,10 @@ class CornCobPortal extends React.Component {
     );
   }
 
-  componentDidMount() {
-    this.afterHeight = $(this.props.msgEl)[0].parentElement.offsetHeight;
-    const difference = this.afterHeight - this.beforeHeight;
-    $('div.hc-chat-scrollbox')[0].scrollTop += difference;
-  }
-
   cornCobRootEl(msgEl) {
     var hasCornCobRootEl = $(msgEl).find('div.CORN-cob').length;
     if (!hasCornCobRootEl) {
       // Render for the first time
-      this.beforeHeight = $(msgEl)[0].parentElement.offsetHeight;
       var msgDivs = $(msgEl).children('div');
       $(msgEl).html('');
       var htmlStructure = "<div class='CORN-msgContainer'>";

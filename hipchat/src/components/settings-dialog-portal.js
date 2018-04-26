@@ -6,7 +6,7 @@ const SettingsDialogPortal = ({children}) => {
     var dialogRootEl = document.getElementById('CORN_dialogRoot');
     if (dialogRootEl) return dialogRootEl;
     dialogRootEl = $("<div><div id='CORN_dialogRoot'></div></div>");
-    $('#hipchat').append(dialogRootEl, $('#hipchat')[0].childNodes[0]);
+    $('body').append(dialogRootEl);
     return document.getElementById('CORN_dialogRoot');
   };
   return ReactDOM.createPortal(

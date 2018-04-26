@@ -19,7 +19,6 @@ class TagsPortal extends React.Component {
   }
 }
 
-
 TagsPortal.propTypes = {
   msgEl: PropTypes.object.isRequired
 };

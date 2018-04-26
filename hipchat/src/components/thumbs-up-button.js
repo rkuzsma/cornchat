@@ -30,7 +30,9 @@ class ThumbsUpButton extends React.Component {
     }
     else {
       return (
-        <span className='CORN-addTag' onClick={this.handleThumbsUp}>👍 {this.props.thumbs}</span>
+        <span
+          className='CORN-addTag'
+          onClick={this.handleThumbsUp}>👍 {this.props.thumbs}</span>
       );
     }
   }

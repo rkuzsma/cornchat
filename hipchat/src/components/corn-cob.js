@@ -36,6 +36,7 @@ class CornCob extends React.Component {
   }
 
   render() {
+
     const addTagButton = this.state.isSavingTags ? (
       <span className="saving"><span>.</span><span>.</span><span>.</span></span>
     ) : (

@@ -1,6 +1,6 @@
 export default {
   // TODO  Speed up the interval once better caching of tags is in place.
-  tag_fetch_loop_interval: 10000,
+  tag_fetch_loop_interval: 50000,
   msg_elements_dom_watch_interval: 3000,
   dev_url: "https://localhost:8080/bundle.js",
   learn_more_url: "https://github.com/rkuzsma/cornchat",

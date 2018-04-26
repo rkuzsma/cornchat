@@ -41,7 +41,7 @@ class MsgElementsStore {
   // Main HipChat DOM watch loop
   _watch() {
     log("MsgElementsStore: Starting HipChat DOM watch loop");
-    setInterval(() => {
+    const watchLoop = () => {
       let current = this._fetchCurrentElements();
       let existing = this.elements;
       let isSame = (
@@ -56,7 +56,9 @@ class MsgElementsStore {
         this.elements = current;
         this._onElementsChanged(existing, current);
       }
-    }, Constants.msg_elements_dom_watch_interval);
+    }
+    watchLoop();
+    setInterval(watchLoop, Constants.msg_elements_dom_watch_interval);
   }
 
   _fetchCurrentElements() {

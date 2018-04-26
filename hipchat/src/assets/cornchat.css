@@ -70,6 +70,7 @@ body {
 }
 .CORN-dialog {
   position: absolute;
+  top: 0px;
   background: white;
   z-index: 11;
   margin-left: 50px;

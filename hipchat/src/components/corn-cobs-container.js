@@ -81,14 +81,16 @@ class CornCobsContainer extends React.Component {
   }
 
   render() {
-    return (<CornCobs
-      tags={this.state.tags}
-      thumbs={this.state.thumbs}
-      msgElements={this.state.msgElements}
-      onFilterByTag={this.props.onFilterByTag}
-      onThumbsUp={this.handleThumbsUp}
-      onAddTag={this.handleAddTag}
-      recentTagNames={this.state.recentTagNames} />);
+    return (
+      <CornCobs
+        tags={this.state.tags}
+        thumbs={this.state.thumbs}
+        msgElements={this.state.msgElements}
+        onFilterByTag={this.props.onFilterByTag}
+        onThumbsUp={this.handleThumbsUp}
+        onAddTag={this.handleAddTag}
+        recentTagNames={this.state.recentTagNames} />
+    );
   }
 }
 

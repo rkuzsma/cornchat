@@ -11,6 +11,7 @@ import React from "react";
 import ReactDOM from "react-dom";
 import ApiToken from './api-token';
 import { hot } from 'react-hot-loader';
+import MsgElementAutoScroller from './components/msg-element-auto-scroller';
 
 // The app's main run loop. App-Loader invokes the loop iteratively.
 class App extends React.Component {
@@ -24,6 +25,10 @@ class App extends React.Component {
     this.toggleSettingsDialog = this.toggleSettingsDialog.bind(this);
     this.onSettingsChanged = this.onSettingsChanged.bind(this);
     this.handleFilterByTag = this.handleFilterByTag.bind(this);
+
+    // Activate the Msg Element Resizer watcher so it gets notified first whenever
+    // new msg elements are added to the chat room.
+    new MsgElementAutoScroller();
 
     // For first time users, generate a token right off the bat
     if (CornChatUser.getApiToken() === '') {
