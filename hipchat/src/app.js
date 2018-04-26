@@ -2,7 +2,6 @@ import './assets/cornchat.css';
 import log from './logger';
 import LogoPortal from './components/logo-portal';
 import Logo from './components/logo';
-import SettingsDialogPortal from './components/settings-dialog-portal';
 import SettingsDialog from './components/settings-dialog';
 import CornCobsContainer from './components/corn-cobs-container';
 import TagFilter from './components/tag-filter';
@@ -53,13 +52,13 @@ class App extends React.Component {
     return (
       <div>
         <TagFilter tag={this.state.tagFilter} />
-        <SettingsDialogPortal>
+        <div>
           <SettingsDialog
             onClose={this.toggleSettingsDialog}
             show={this.state.isShowSettings}
             token={this.state.apiToken}
             onSettingsChanged={this.onSettingsChanged} />
-        </SettingsDialogPortal>
+        </div>
         <LogoPortal>
           <Logo onClick={this.toggleSettingsDialog} />
         </LogoPortal>
