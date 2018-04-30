@@ -1,0 +1,49 @@
+
+query GetMsgInfos {
+   getMsgInfos(mids: ["699a1266-c937-44d8-bf54-2fa40c59005c"]) {
+       mid
+       reactions {
+         emoji
+       }
+       tags {
+         name
+       }
+   }
+}
+
+
+query GetMsgInfo {
+   getMsgInfo(mid: "699a1266-c937-44d8-bf54-2fa40c59005c") {
+     mid
+     reactions {
+       emoji
+     }
+     tags {
+       name
+     }
+   }
+}
+
+mutation addTag {
+   addTag(mid: "699a1266-c937-44d8-bf54-2fa40c59005c",
+          room:"just experimenting",
+          name: "Blue") {
+       mid
+    	 tags {
+         name
+  		}
+   }
+}
+
+mutation addReaction {
+   addReaction(mid: "699a1266-c937-44d8-bf54-2fa40c59005c",
+               room: "just experimenting",
+               emoji: ":)",
+               userId: "123456") {
+       mid
+    	 reactions {
+         emoji,
+         userId
+  		}
+   }
+}

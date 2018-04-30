@@ -1,0 +1,124 @@
+getMsgInfo:
+
+RequestMapping:
+
+{
+    "version": "2017-02-28",
+    "operation": "GetItem",
+    "key": {
+        "mid": $util.dynamodb.toDynamoDBJson($ctx.args.mid),
+    }
+}
+
+ResponseMapping:
+
+$util.toJson($ctx.result)
+
+--------------
+
+getMsgInfos:
+
+RequestMapping:
+
+#set($mids = [])
+#foreach($mid in ${ctx.args.mids})
+    #set($map = {})
+    $util.qr($map.put("mid", $util.dynamodb.toString($mid)))
+    $util.qr($mids.add($map))
+#end
+
+{
+    "version" : "2018-05-29",
+    "operation" : "BatchGetItem",
+    "tables" : {
+        "CornChatMsgInfo": {
+            "keys": $util.toJson($mids),
+            "consistentRead": true
+        }
+    }
+}
+
+ResponseMapping:
+
+$util.toJson($ctx.result.data.CornChatMsgInfo)
+
+
+---------------
+
+addTag:
+
+RequestMapping:
+
+{
+    "version" : "2017-02-28",
+    "operation" : "UpdateItem",
+    "update": {
+    	"expression": "SET tags = list_append(if_not_exists(tags, :empty_list), :new_tags), room = :room",
+        "expressionValues": {
+          ":new_tags": {
+            "L": [
+              {
+                "M": {
+                  "name": $util.dynamodb.toDynamoDBJson($ctx.args.name)
+                }
+              }
+            ]
+          },
+          ":empty_list": {
+            "L": [
+            ]
+          },
+          ":room": $util.dynamodb.toDynamoDBJson($ctx.args.room)
+        }
+    },
+    "key" : {
+        "mid": $util.dynamodb.toDynamoDBJson($ctx.args.mid)
+    }
+}
+
+
+ResponseMapping:
+
+$util.toJson($ctx.result)
+
+-----------------------------------
+addReaction:
+
+RequestMapping:
+Ideally, we want a map of userId and reactions, so user cannot vote twice.
+But you cannot "SET reactions.UserId=somereaction" if reactions map doesn't yet exist.
+So we record every reaction -- even duplicate reactions -- and rely on clients to
+strip duplicates.
+TODO Validate the userId against user's oauth token in a Lambda, to prevent fraud.
+{
+    "version" : "2017-02-28",
+    "operation" : "UpdateItem",
+    "update": {
+    	"expression": "SET reactions = list_append(if_not_exists(reactions, :empty_list), :new_reactions), room = :room",
+        "expressionValues": {
+          ":new_reactions": {
+            "L": [
+              {
+                "M": {
+                  "emoji": $util.dynamodb.toDynamoDBJson($ctx.args.emoji),
+                  "userId": $util.dynamodb.toDynamoDBJson($ctx.args.userId)
+                }
+              }
+            ]
+          },
+          ":empty_list": {
+            "L": [
+            ]
+          },
+          ":room": $util.dynamodb.toDynamoDBJson($ctx.args.room)
+        }
+    },
+    "key" : {
+        "mid": $util.dynamodb.toDynamoDBJson($ctx.args.mid)
+    }
+}
+
+
+ResponseMapping:
+
+$util.toJson($ctx.result)
