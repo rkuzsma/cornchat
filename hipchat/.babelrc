@@ -1,5 +1,5 @@
 {
-  "presets": ["env", "react"],
+  "presets": ["env", "es2015", "stage-3", "react"],
   "plugins": ["react-hot-loader/babel",
     "dynamic-import-webpack",
     "transform-runtime",

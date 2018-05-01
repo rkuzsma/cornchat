@@ -5,6 +5,7 @@ import PropTypes from 'prop-types';
 import MsgElementsStore from '../msg-elements-store';
 import MsgInfoStore from '../msg-info-store';
 import CornCobs from './corn-cobs';
+import HipchatWindow from '../hipchat-window';
 
 class CornCobsContainer extends React.Component {
   constructor(props) {
@@ -13,7 +14,8 @@ class CornCobsContainer extends React.Component {
       msgElements: [],
       tags: {},
       thumbs: {},
-      recentTagNames: []
+      recentTagNames: [],
+      roomId: ''
     }
     this.msgElementStore = new MsgElementsStore();
     this.msgInfoStore = new MsgInfoStore();
@@ -50,7 +52,8 @@ class CornCobsContainer extends React.Component {
       msgElements: this.msgElementStore.recentElements(),
       tags: this.msgInfoStore.recentTags(),
       recentTagNames: Object.keys(this.msgInfoStore.recentDistinctTagsByName()),
-      thumbs: this.msgInfoStore.recentThumbs()
+      thumbs: this.msgInfoStore.recentThumbs(),
+      roomId: HipchatWindow.roomId()
     });
     this.msgElementStoreListener = {onElementsChanged: ((prevElements, currentElements) => {
       log("CornCobsContainer: updating msgElements");
@@ -89,7 +92,8 @@ class CornCobsContainer extends React.Component {
         onFilterByTag={this.props.onFilterByTag}
         onThumbsUp={this.handleThumbsUp}
         onAddTag={this.handleAddTag}
-        recentTagNames={this.state.recentTagNames} />
+        recentTagNames={this.state.recentTagNames}
+        roomId={this.state.roomId} />
     );
   }
 }

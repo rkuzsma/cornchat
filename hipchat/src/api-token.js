@@ -1,6 +1,7 @@
 import Constants from './constants';
 import log from './logger';
 import AWS from 'aws-sdk';
+import HipchatWindow from './hipchat-window';
 
 class ApiToken {
   static _withPoolId(poolId, fn) {
@@ -37,8 +38,8 @@ class ApiToken {
   }
 
   static generateTokenForCurrentHipChatUser(fn) {
-    var hipchatUserId = window.HC.ApplicationStore.data.config.user_id;
-    var hipchatOauthAccessToken = window.HC.ApplicationStore.data.config.oauth_token;
+    var hipchatUserId = HipchatWindow.userId();
+    var hipchatOauthAccessToken = HipchatWindow.oauthToken();
     ApiToken.generateToken(hipchatUserId, hipchatOauthAccessToken, fn);
   }
 

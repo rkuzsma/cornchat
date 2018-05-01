@@ -11,6 +11,12 @@ import ReactDOM from "react-dom";
 import ApiToken from './api-token';
 import { hot } from 'react-hot-loader';
 import MsgElementAutoScroller from './components/msg-element-auto-scroller';
+import Constants from './constants';
+
+import AWSAppSyncClient from "aws-appsync";
+import { Rehydrated } from 'aws-appsync-react';
+import { ApolloProvider } from 'react-apollo';
+
 
 // The app's main run loop. App-Loader invokes the loop iteratively.
 class App extends React.Component {
@@ -49,21 +55,40 @@ class App extends React.Component {
   render() {
     log("App.render()");
 
+
+    const client = new AWSAppSyncClient({
+      url: Constants.graphql_endpoint,
+      region: Constants.aws_region,
+      auth: {
+        type: Constants.authentication_type,
+        apiKey: Constants.api_key,
+      }
+    });
+
     return (
-      <div>
-        <TagFilter tag={this.state.tagFilter} />
-        <div>
-          <SettingsDialog
-            onClose={this.toggleSettingsDialog}
-            show={this.state.isShowSettings}
-            token={this.state.apiToken}
-            onSettingsChanged={this.onSettingsChanged} />
-        </div>
-        <LogoPortal>
-          <Logo onClick={this.toggleSettingsDialog} />
-        </LogoPortal>
-        <CornCobsContainer onFilterByTag={this.handleFilterByTag} />
-      </div>
+      <ApolloProvider client={client}>
+        <Rehydrated>
+
+          <div>
+            <TagFilter tag={this.state.tagFilter} />
+            <div>
+              <SettingsDialog
+                onClose={this.toggleSettingsDialog}
+                show={this.state.isShowSettings}
+                token={this.state.apiToken}
+                onSettingsChanged={this.onSettingsChanged} />
+            </div>
+            <LogoPortal>
+              <Logo onClick={this.toggleSettingsDialog} />
+            </LogoPortal>
+            <CornCobsContainer onFilterByTag={this.handleFilterByTag} />
+          </div>
+
+        </Rehydrated>
+      </ApolloProvider>
+
+
+
     );
   }
 

@@ -24,7 +24,8 @@ class CornCobs extends React.Component {
           onAddTag={this.props.onAddTag}
           msgId={item.msgId}
           msgEl={item.msgEl}
-          recentTagNames={this.props.recentTagNames} />
+          recentTagNames={this.props.recentTagNames}
+          roomId={this.props.roomId} />
       </CornCobPortal>
     );
     return cobs;
@@ -38,7 +39,8 @@ CornCobs.propTypes = {
   onFilterByTag: PropTypes.func.isRequired,
   onThumbsUp: PropTypes.func.isRequired,
   onAddTag: PropTypes.func.isRequired,
-  recentTagNames: PropTypes.array
+  recentTagNames: PropTypes.array,
+  roomId: PropTypes.string.isRequired
 };
 
 export default CornCobs;

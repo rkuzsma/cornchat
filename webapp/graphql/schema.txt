@@ -9,8 +9,8 @@ type MsgInfo {
 }
 
 type Mutation {
-  addTag(mid: ID!, room: String!, name: String!): MsgInfo
-  addReaction(mid: ID!, room: String!, emoji: String!, userId: String!): MsgInfo
+	addTag(mid: ID!, room: String!, name: String!): MsgInfo
+	addReaction(mid: ID!, room: String!, emoji: String!): MsgInfo
 }
 
 type Query {
@@ -24,8 +24,8 @@ type Reaction {
 }
 
 type Subscription {
-    changedMsgInfo(room: String!): MsgInfo
-    @aws_subscribe(mutations: ["addTag", "addReaction"])
+	changedMsgInfo(room: String!): MsgInfo
+		@aws_subscribe(mutations: ["addTag","addReaction"])
 }
 
 type Tag {

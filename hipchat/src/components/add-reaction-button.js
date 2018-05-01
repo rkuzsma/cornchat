@@ -39,7 +39,9 @@ class AddReactionButton extends React.Component {
 
   handlePickEmoji(emoji) {
     this.toggleAddReactionDialog();
-    this.props.onAddReaction(emoji.id);
+    this.props.onAddReaction({
+      emoji: emoji.id
+    });
   }
 
   render() {
