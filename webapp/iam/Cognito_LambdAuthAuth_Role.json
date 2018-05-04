@@ -17,7 +17,33 @@
                 "dynamodb:UpdateItem"
             ],
             "Effect": "Allow",
-            "Resource": "arn:aws:dynamodb:<REGION>:<AWS_ACCOUNT_ID>:table/<DYNAMODB_TABLE>"
+            "Resource": [
+                "arn:aws:dynamodb:us-east-1:452684070979:table/CornchatApiTokens",
+                "arn:aws:dynamodb:us-east-1:452684070979:table/CornchatUsers"
+            ]
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "appsync:GraphQL"
+            ],
+            "Resource": [
+                "arn:aws:appsync:us-east-1:452684070979:apis/g7n54bvl2fh4djuu6dvmgljlre/*"
+            ]
+        },
+        {
+            "Action": [
+                "dynamodb:GetItem",
+                "dynamodb:PutItem",
+                "dynamodb:UpdateItem",
+                "dynamodb:BatchGetItem",
+                "dynamodb:Query"
+            ],
+            "Effect": "Allow",
+            "Resource": [
+                "arn:aws:dynamodb:us-east-1:452684070979:table/CornchatTags",
+                "arn:aws:dynamodb:us-east-1:452684070979:table/CornChatMsgInfo"
+            ]
         },
         {
             "Effect": "Allow",
@@ -25,13 +51,8 @@
                 "lambda:InvokeFunction"
             ],
             "Resource": [
-                "arn:aws:lambda:<REGION>:<AWS_ACCOUNT_ID>:function:LambdAuthCreateUser",
-                "arn:aws:lambda:<REGION>:<AWS_ACCOUNT_ID>:function:LambdAuthVerifyUser",
-                "arn:aws:lambda:<REGION>:<AWS_ACCOUNT_ID>:function:LambdAuthChangePassword",
-                "arn:aws:lambda:<REGION>:<AWS_ACCOUNT_ID>:function:LambdAuthLostUser",
-                "arn:aws:lambda:<REGION>:<AWS_ACCOUNT_ID>:function:LambdAuthLostPassword",
-                "arn:aws:lambda:<REGION>:<AWS_ACCOUNT_ID>:function:LambdAuthResetPassword",
-                "arn:aws:lambda:<REGION>:<AWS_ACCOUNT_ID>:function:LambdAuthLogin"
+                "arn:aws:lambda:us-east-1:452684070979:function:LambdAuthGenerateApiToken",
+                "arn:aws:lambda:us-east-1:452684070979:function:LambdAuthApiTokenLogin"
             ]
         }
     ]

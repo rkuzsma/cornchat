@@ -13,6 +13,14 @@ import { hot } from 'react-hot-loader';
 import MsgElementAutoScroller from './components/msg-element-auto-scroller';
 import Constants from './constants';
 
+// Importing `isomorphic-unfetch` due to `apollo-link-http` raising
+// a warning of not having `fetch` globally available.
+// @see https://github.com/apollographql/apollo-link/issues/493
+// Also prevents "resolveClient not an error" when disableOffline=false
+// @see // https://github.com/awslabs/aws-mobile-appsync-sdk-js/pull/96/files#r186038406
+import 'isomorphic-unfetch';
+import { createHttpLink } from 'apollo-link-http';
+
 import AWSAppSyncClient from "aws-appsync";
 import { Rehydrated } from 'aws-appsync-react';
 import { ApolloProvider } from 'react-apollo';
@@ -25,11 +33,15 @@ class App extends React.Component {
     this.state = {
       isShowSettings: false,
       tagFilter: null,
-      apiToken: CornChatUser.getApiToken()
+      apiToken: CornChatUser.getApiToken(),
+      client: null
     };
     this.toggleSettingsDialog = this.toggleSettingsDialog.bind(this);
     this.onSettingsChanged = this.onSettingsChanged.bind(this);
     this.handleFilterByTag = this.handleFilterByTag.bind(this);
+
+// TODO Move this to ComponentDidMount because React could error if trying to setState
+// before a component is actually mounted:
 
     // Activate the Msg Element Resizer watcher so it gets notified first whenever
     // new msg elements are added to the chat room.
@@ -52,21 +64,38 @@ class App extends React.Component {
     }
   }
 
-  render() {
-    log("App.render()");
+  componentDidMount() {
 
-
-    const client = new AWSAppSyncClient({
-      url: Constants.graphql_endpoint,
-      region: Constants.aws_region,
-      auth: {
-        type: Constants.authentication_type,
-        apiKey: Constants.api_key,
+    CornChatUser.withAuthenticatedUser((err, authUser) => {
+      if (err) {
+        log("AWSAppSyncClient init failed, authentication error: " + err);
+      }
+      try {
+        log("Initializing AWSAppSyncClient");
+        var client = new AWSAppSyncClient({
+          disableOffline: false,
+          url: Constants.graphql_endpoint,
+          region: Constants.aws_region,
+          auth: {
+            // See: https://docs.aws.amazon.com/appsync/latest/devguide/security.html
+            type: "AWS_IAM",
+            credentials: authUser.aws.config.credentials
+          }
+        });
+        this.setState({client: client});
+      }
+      catch(err) {
+        log("AWSAppSyncClient init error: " + err);
       }
     });
+  }
+
+  render() {
+    log("App.render()");
+    if (this.state.client == null) return null;
 
     return (
-      <ApolloProvider client={client}>
+      <ApolloProvider client={this.state.client}>
         <Rehydrated>
 
           <div>
@@ -86,10 +115,8 @@ class App extends React.Component {
 
         </Rehydrated>
       </ApolloProvider>
+     );
 
-
-
-    );
   }
 
   toggleSettingsDialog() {

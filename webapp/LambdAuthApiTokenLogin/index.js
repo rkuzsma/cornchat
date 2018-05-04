@@ -34,13 +34,16 @@ function getHipchatUserIdFromApiToken(apiToken, fn) {
 	});
 }
 
-function getCognitoToken(hipchatUserId, fn) {
-	var param = {
+function getCognitoToken(hipchatUserId, optionalExistingIdentityId, fn) {
+	var cognitoParams = {
 		IdentityPoolId: config.IDENTITY_POOL_ID,
+		// Reuse a previous identity ID if one available
+		IdentityId: optionalExistingIdentityId,
 		Logins: {} // To have provider name in a variable
 	};
-	param.Logins[config.DEVELOPER_PROVIDER_NAME] = hipchatUserId;
-	cognitoidentity.getOpenIdTokenForDeveloperIdentity(param,
+	// i.e. our "login.cornchat" provider name.
+	cognitoParams.Logins[config.DEVELOPER_PROVIDER_NAME] = hipchatUserId;
+	cognitoidentity.getOpenIdTokenForDeveloperIdentity(cognitoParams,
 		function(err, data) {
 			if (err) return fn(err); // an error occurred
 			else fn(null, data.IdentityId, data.Token); // successful response
@@ -66,10 +69,17 @@ exports.handler = function(event, context) {
 
 		// Token OK, so Login ok
 		console.log('User logged in via token. HipChat User ID: ' + hipchatUserId);
-		getCognitoToken(hipchatUserId, function(err, identityId, token) {
+		var cognitoIdentityId = null;
+		if(context.identity && context.identity.cognitoIdentityId){
+			cognitoIdentityId = context.identity.cognitoIdentityId;
+			console.log("Reusing identity ID: " + cognitoIdentityId);
+	  }
+		console.log("getCognitoToken(" + hipchatUserId + "," + cognitoIdentityId + ")");
+		getCognitoToken(hipchatUserId, cognitoIdentityId, function(err, identityId, token) {
 			if (err) {
 				context.fail('Error in getCognitoToken: ' + err);
 			} else {
+				console.log("Got a Cognito Token. IdentityId: " + identityId);
 				context.succeed({
 					login: true,
 					identityId: identityId,

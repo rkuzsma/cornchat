@@ -21,18 +21,17 @@ class CornChatUser {
 
   static withAuthenticatedUser(fn) {
     if (this.isAuthenticated()) {
-      fn(null, this.currentAuthenticatedUser());
+      return fn(null, this.currentAuthenticatedUser());
     }
     else {
       log("CornChatUser: (re)Authenticating user...");
       this.authenticateUser(this.getApiToken(), (err, user) => {
         if (err) {
           log("CornChatUser: Not authenticated. " + err);
-          fn(err, null);
-          return;
+          return fn(err, null);
         }
         log("CornChatUser: Authenticated user.")
-        fn(null, this.currentAuthenticatedUser());
+        return fn(null, this.currentAuthenticatedUser());
       });
     }
   }
@@ -40,13 +39,13 @@ class CornChatUser {
   static authenticateUser(apiToken, fn) {
     if (!apiToken || apiToken === '') {
       log("CornChatUser: No API Token");
-      throw("No API Token");
+      return fn("No API Token", null);
     }
     ApiToken.loginWithApiToken(apiToken, function(err, aws) {
       try {
         if (err) {
           log("CornChatUser: Error authenticating with API Token: " + err);
-          throw(err);
+          return fn(err, null);
         }
         _currentAuthenticatedUser = {
           isAuthenticated: true,
@@ -54,7 +53,7 @@ class CornChatUser {
           aws: aws,
           lastAuthenticatedAt: new Date().getTime()
         }
-        fn(null, _currentAuthenticatedUser)
+        return fn(null, _currentAuthenticatedUser)
       }
       catch(err) {
         log("CornChatUser: Failed to authenticate user with API Token: " + err);
@@ -62,7 +61,7 @@ class CornChatUser {
           isAuthenticated: false,
           apiToken: apiToken
         }
-        fn(err);
+        return fn(err, null);
       }
     });
   }
