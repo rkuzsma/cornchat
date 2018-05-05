@@ -1,0 +1,158 @@
+---
+Description: CornChat API
+
+Parameters:
+  AppName:
+    Type: String
+    Default: TestCornChat
+    Description: Base name used to generate unique names for resources, e.g. ProdCornChat or TestCornChat
+    MinLength: 3
+    MaxLength: 20
+    AllowedPattern: '^[a-zA-Z][a-zA-Z0-9_]*$'
+
+Outputs:
+  IdentityPool:
+    Description: The Cognito Identity Pool
+    Value: !Ref IdentityPool
+  DynamoDBTableNameMsgInfo:
+    Description: The name of the DynamoDB MsgInfo Table
+    Value: !Ref DynamoDBTableMsgInfo
+  GraphQLApiEndpoint:
+    Description: The URL to the GraphQL Endpoint
+    Value: !GetAtt AppSyncApi.GraphQLUrl
+  GraphQLApiId:
+    Description: The API ID of the GraphQL API
+    Value: !GetAtt AppSyncApi.ApiId
+
+Resources:
+  DynamoDBRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${AppName}-appsync-dynamodb-role
+      ManagedPolicyArns:
+        - Ref: AppSyncDynamoDBPolicy
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - sts:AssumeRole
+            Principal:
+              Service:
+                - appsync.amazonaws.com
+    DependsOn:
+      - AppSyncDynamoDBPolicy
+
+  AppSyncDynamoDBPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: Managed policy to allow AWS AppSync to access the tables created by this template.
+      Path: /appsync/
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - dynamodb:GetItem
+              - dynamodb:PutItem
+              - dynamodb:DeleteItem
+              - dynamodb:UpdateItem
+              - dynamodb:Query
+              - dynamodb:Scan
+              - dynamodb:BatchGetItem
+              - dynamodb:BatchWriteItem
+            Resource: !Join [ "", [ !GetAtt DynamoDBTableMsgInfo.Arn, "*" ] ]
+
+  UserPool:
+    Type: "AWS::Cognito::UserPool"
+    Description: "A Cognito user pool for authenticating users"
+    Properties:
+      UserPoolName: !Sub ${AppName}-user-pool
+
+  IdentityPool:
+    Type: "AWS::Cognito::IdentityPool"
+    Properties:
+      IdentityPoolName: !Sub ${AppName}IdentityPool
+      AllowUnauthenticatedIdentities: true
+      DeveloperProviderName: !Sub login.${AppName}
+
+  DynamoDBTableMsgInfo:
+    Type: "AWS::DynamoDB::Table"
+    Description: "Data store for chat messages"
+    Properties:
+      TableName: !Sub ${AppName}_MsgInfo
+      AttributeDefinitions:
+        - AttributeName: "mid"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "mid"
+          KeyType: "HASH"
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 1
+
+  AppSyncApi:
+    Type: "AWS::AppSync::GraphQLApi"
+    Description: "The GraphQL API for the CornChat App"
+    Properties:
+      AuthenticationType: "AWS_IAM"
+      Name: !Sub ${AppName}API
+
+  AppSyncTableDataSourceMsgInfo:
+    Type: "AWS::AppSync::DataSource"
+    Properties:
+      ApiId: !GetAtt AppSyncApi.ApiId
+      Name: !Sub ${AppName}_MsgInfo
+      Description: "The MsgInfo AppSync Data Source"
+      Type: AMAZON_DYNAMODB
+      ServiceRoleArn: !GetAtt DynamoDBRole.Arn
+      DynamoDBConfig:
+        TableName: !Ref DynamoDBTableMsgInfo
+        AwsRegion: !Sub ${AWS::Region}
+
+  AppSyncSchema:
+    Type: "AWS::AppSync::GraphQLSchema"
+    Properties:
+      ApiId: !GetAtt AppSyncApi.ApiId
+      Definition: |
+<% cat ./graphql/schema.gql | sed 's/^/        /' %>
+
+  AppSyncResolverGetMsgInfo:
+    Type: "AWS::AppSync::Resolver"
+    DependsOn: AppSyncSchema
+    Properties:
+      ApiId: !GetAtt AppSyncApi.ApiId
+      TypeName: Query
+      FieldName: getMsgInfo
+      DataSourceName: !GetAtt AppSyncTableDataSourceMsgInfo.Name
+<% cat ./graphql/resolvers/getMsgInfo.yaml | sed 's/^/      /' %>
+
+  AppSyncResolverGetMsgInfos:
+    Type: "AWS::AppSync::Resolver"
+    DependsOn: AppSyncSchema
+    Properties:
+      ApiId: !GetAtt AppSyncApi.ApiId
+      TypeName: Query
+      FieldName: getMsgInfos
+      DataSourceName: !GetAtt AppSyncTableDataSourceMsgInfo.Name
+<% cat ./graphql/resolvers/getMsgInfos.yaml | sed 's/^/      /' %>
+
+  AppSyncResolverAddTag:
+    Type: "AWS::AppSync::Resolver"
+    DependsOn: AppSyncSchema
+    Properties:
+      ApiId: !GetAtt AppSyncApi.ApiId
+      TypeName: Mutation
+      FieldName: addTag
+      DataSourceName: !GetAtt AppSyncTableDataSourceMsgInfo.Name
+<% cat ./graphql/resolvers/addTag.yaml | sed 's/^/      /' %>
+
+  AppSyncResolverAddReaction:
+    Type: "AWS::AppSync::Resolver"
+    DependsOn: AppSyncSchema
+    Properties:
+      ApiId: !GetAtt AppSyncApi.ApiId
+      TypeName: Mutation
+      FieldName: addReaction
+      DataSourceName: !GetAtt AppSyncTableDataSourceMsgInfo.Name
+<% cat ./graphql/resolvers/addReaction.yaml | sed 's/^/      /' %>

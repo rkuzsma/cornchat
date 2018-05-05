@@ -1,0 +1,29 @@
+RequestMappingTemplate: |
+  {
+      "version" : "2017-02-28",
+      "operation" : "UpdateItem",
+      "update": {
+        "expression": "SET tags = list_append(if_not_exists(tags, :empty_list), :new_tags), room = :room",
+          "expressionValues": {
+            ":new_tags": {
+              "L": [
+                {
+                  "M": {
+                    "name": $util.dynamodb.toDynamoDBJson($ctx.args.name)
+                  }
+                }
+              ]
+            },
+            ":empty_list": {
+              "L": [
+              ]
+            },
+            ":room": $util.dynamodb.toDynamoDBJson($ctx.args.room)
+          }
+      },
+      "key" : {
+          "mid": $util.dynamodb.toDynamoDBJson($ctx.args.mid)
+      }
+  }
+ResponseMappingTemplate: |
+  $util.toJson($ctx.result)

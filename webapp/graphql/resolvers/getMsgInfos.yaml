@@ -1,0 +1,20 @@
+RequestMappingTemplate: |
+  #set($mids = [])
+  #foreach($mid in ${ctx.args.mids})
+      #set($map = {})
+      $util.qr($map.put("mid", $util.dynamodb.toString($mid)))
+      $util.qr($mids.add($map))
+  #end
+
+  {
+      "version" : "2018-05-29",
+      "operation" : "BatchGetItem",
+      "tables" : {
+          "CornChatMsgInfo": {
+              "keys": $util.toJson($mids),
+              "consistentRead": true
+          }
+      }
+  }
+ResponseMappingTemplate: |
+  $util.toJson($ctx.result.data.CornChatMsgInfo)

@@ -1,0 +1,34 @@
+type MsgInfo {
+  mid: ID!
+  tags: [Tag]
+  reactions: [Reaction]
+}
+
+type Mutation {
+  addTag(mid: ID!, room: String!, name: String!): MsgInfo
+  addReaction(mid: ID!, room: String!, emoji: String!): MsgInfo
+}
+
+type Query {
+  getMsgInfo(mid: String!): MsgInfo
+  getMsgInfos(mids: [String!]): [MsgInfo]
+}
+
+type Reaction {
+  emoji: String!
+  userId: String!
+}
+
+type Subscription {
+  changedMsgInfo(room: String!): MsgInfo
+    @aws_subscribe(mutations: ["addTag","addReaction"])
+}
+
+type Tag {
+  name: String!
+}
+
+schema {
+  query: Query
+  mutation: Mutation
+}
