@@ -313,7 +313,7 @@ Resources:
       Description: Allow users to generate a CornChat API token by providing a valid HipChat User ID and HipChat OAuth token
       Code:
         S3Bucket: "cornchat-private"
-        S3Key: !Sub "cloudformation/${AppName}-stack/lambda/GenerateToken.js"
+        S3Key: !Sub "cloudformation/${AppName}-stack/lambda/GenerateToken.zip"
       Role: !GetAtt GenerateTokenRole.Arn
       Timeout: 10
       Handler: "index.handler"
@@ -369,7 +369,7 @@ Resources:
       Description: Allow users to login with a CornChat API Token and get a federated Cognito session token.
       Code:
         S3Bucket: "cornchat-private"
-        S3Key: !Sub "cloudformation/${AppName}-stack/lambda/Login.js"
+        S3Key: !Sub "cloudformation/${AppName}-stack/lambda/Login.zip"
       Role: !GetAtt LoginLambdaRole.Arn
       Timeout: 10
       Handler: "index.handler"

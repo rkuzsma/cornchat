@@ -56,7 +56,7 @@ module.exports = {
       'CORNCHAT_APP_NAME': JSON.stringify(envVar('CORNCHAT_APP_NAME',
           "TestCornChat")),
       'CORNCHAT_IDENTITY_POOL_ID': JSON.stringify(envVar('CORNCHAT_IDENTITY_POOL_ID',
-          "us-east-1:ab3844fc-ee14-44f7-88ee-e4265a457bb9")),
+          "us-east-1:b772f252-e167-400f-98d8-8ade0a45feb8")),
       'CORNCHAT_TABLE_API_TOKENS': JSON.stringify(envVar('CORNCHAT_TABLE_API_TOKENS',
           "TestCornChat_ApiTokens")),
       'CORNCHAT_IDENTITY_POOL_DEVELOPER_PROVIDER_NAME': JSON.stringify(envVar('CORNCHAT_IDENTITY_POOL_DEVELOPER_PROVIDER_NAME',

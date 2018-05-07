@@ -34,6 +34,14 @@ echo "Templates uploaded"
 echo "----"
 echo "Building and uploading lambdas to s3://$CORNCHAT_PRIVATE_BUCKET/cloudformation/$STACK_NAME/lambda"
 npm run build
+for f in $(ls -1 ./build/lambda); do
+  pushd ./build/lambda/
+  f_no_ext=${f%.*}
+  mv $f index.js
+  zip $f_no_ext.zip ./index.js
+  rm -f index.js
+  popd
+done
 aws s3 sync ./build/lambda/ s3://$CORNCHAT_PRIVATE_BUCKET/cloudformation/$STACK_NAME/lambda
 echo "Lambdas uploaded"
 

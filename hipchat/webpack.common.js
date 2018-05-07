@@ -48,9 +48,9 @@ module.exports = {
       'CORNCHAT_APP_NAME': JSON.stringify(envVar('CORNCHAT_APP_NAME',
           "TestCornChat")),
       'CORNCHAT_IDENTITY_POOL_ID': JSON.stringify(envVar('CORNCHAT_IDENTITY_POOL_ID',
-          "us-east-1:ab3844fc-ee14-44f7-88ee-e4265a457bb9")),
+          "us-east-1:b772f252-e167-400f-98d8-8ade0a45feb8")),
       'CORNCHAT_GRAPHQL_ENDPOINT_URL': JSON.stringify(envVar('CORNCHAT_GRAPHQL_ENDPOINT_URL',
-          "https://ug3kah2jjjedpkk5mkbgwjcgne.appsync-api.us-east-1.amazonaws.com/graphql")),
+          "https://dmky4bz4e5e4pht3vjsipqg7vq.appsync-api.us-east-1.amazonaws.com/graphql")),
     })
   ]
 };
