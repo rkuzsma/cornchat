@@ -32,22 +32,15 @@ aws s3 sync ./build/templates/ s3://$CORNCHAT_PRIVATE_BUCKET/cloudformation/$STA
 echo "Templates uploaded"
 
 echo "----"
-echo "Zipping and uploading lambdas to s3://$CORNCHAT_PRIVATE_BUCKET/cloudformation/$STACK_NAME/lambda"
-cp -r ./lambda ./build
-for f in $(ls -1 ./build/lambda); do
-  mkdir -p ./build/lambda/$f
-	cp config.json ./build/lambda/$f/
-  pushd ./build/lambda/$f/
-  zip -r $f.zip ./
-  mv $f.zip ../
-  popd
-  rm -rf ./build/lambda/$f/
-done
+echo "Building and uploading lambdas to s3://$CORNCHAT_PRIVATE_BUCKET/cloudformation/$STACK_NAME/lambda"
+npm run build
 aws s3 sync ./build/lambda/ s3://$CORNCHAT_PRIVATE_BUCKET/cloudformation/$STACK_NAME/lambda
 echo "Lambdas uploaded"
 
 echo "----"
+set +e
 STATUS=$((aws cloudformation describe-stacks --stack-name $STACK_NAME) 2>&1)
+set -e
 if echo $STATUS | grep -q 'does not exist'; then
   echo "Creating stack '$STACK_NAME'"
   aws cloudformation create-stack \
@@ -58,8 +51,9 @@ if echo $STATUS | grep -q 'does not exist'; then
 else
   echo "Stack already exists."
   if echo $STATUS | grep -q 'ROLLBACK_COMPLETE'; then
-    echo "Stack is in ROLLBACK_COMPLETE. You cannot update it. To proceed, run: "
+    echo "ERROR: Stack is in ROLLBACK_COMPLETE status. You cannot update it. To proceed, run: "
     echo "aws cloudformation delete-stack --stack-name $STACK_NAME"
+    exit 1
   else
     echo "Updating stack..."
     aws cloudformation update-stack \

@@ -1,0 +1,17 @@
+{
+  "AWS_ACCOUNT_ID": "452684070979",
+  "CLI_PROFILE": "cornchat",
+  "REGION": "us-east-1",
+  "BUCKET": "cornchat",
+  "MAX_AGE": "10",
+  "CRYPTO_BYTE_SIZE": 128,
+  "DDB_TABLE": "CornchatUsers",
+  "DDB_TOKENS_TABLE": "CornchatApiTokens",
+  "IDENTITY_POOL_NAME": "CornchatIdentityPool",
+  "DEVELOPER_PROVIDER_NAME": "login.cornchat",
+  "EXTERNAL_NAME": "Cornchat Authentication",
+  "EMAIL_SOURCE": "nobody@nowhere.com",
+  "VERIFICATION_PAGE": "http://cornchat.s3.amazonaws.com/verify.html",
+  "RESET_PAGE": "http://cornchat.s3.amazonaws.com/reset.html",
+  "IDENTITY_POOL_ID": "us-east-1:83c77c52-ef3f-4e51-bf39-d682eda27aad"
+}

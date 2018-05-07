@@ -29,15 +29,13 @@ Outputs:
 
 Resources:
 
-
 ############### DYNAMODB
 
-  AppSyncAppSyncDynamoDBRole:
+  AppSyncDynamoDBRole:
     Type: AWS::IAM::Role
     DependsOn:
       - AppSyncDynamoDBPolicy
     Properties:
-      Description: Role that CornChat's AppSync DataSource assumes to interact with MsgInfo data.
       RoleName: !Sub ${AppName}-DynamoDB
       ManagedPolicyArns:
         - Ref: AppSyncDynamoDBPolicy
@@ -71,7 +69,7 @@ Resources:
               - dynamodb:Scan
               - dynamodb:BatchGetItem
               - dynamodb:BatchWriteItem
-            Resource: !Join [ "", [ !GetAtt DynamoDBTableMsgInfo.Arn, "*" ] ]
+            Resource: !Join [ "", [ !GetAtt DynamoDBTableMsgInfo.Arn, "/*" ] ]
 
   DynamoDBTableMsgInfo:
     Type: "AWS::DynamoDB::Table"
@@ -96,8 +94,6 @@ Resources:
       AttributeDefinitions:
         - AttributeName: "apiToken"
           AttributeType: "S"
-        - AttributeName: "hipchatUserId"
-          AttributeType: "S"
       KeySchema:
         - AttributeName: "apiToken"
           KeyType: "HASH"
@@ -111,7 +107,6 @@ Resources:
   IdentityPool:
     Type: "AWS::Cognito::IdentityPool"
     Properties:
-      Description: "A Cognito identity pool for authenticating users with CornChat API Tokens."
       IdentityPoolName: !Sub ${AppName}IdentityPool
       AllowUnauthenticatedIdentities: true
       DeveloperProviderName: !Sub login.${AppName}
@@ -125,8 +120,8 @@ Resources:
     Properties:
       IdentityPoolId: !Ref IdentityPool
       Roles:
-        authenticated: !GetAtt CognitoAuthorizedRole.Arn
-        unauthenticated: !GetAtt CognitoUnAuthorizedRole.Arn
+        authenticated: !GetAtt CognitoAuthorizedUserRole.Arn
+        unauthenticated: !GetAtt CognitoUnAuthorizedUserRole.Arn
 
   CognitoAuthorizedUserRole:
     Type: AWS::IAM::Role
@@ -147,7 +142,6 @@ Resources:
             Condition:
               StringEquals:
                 "cognito-identity.amazonaws.com:aud": !Ref IdentityPool
-                          #"us-east-1:83c77c52-ef3f-4e51-bf39-d682eda27aad"
               "ForAnyValue:StringLike":
                 "cognito-identity.amazonaws.com:amr": "authenticated"
           - Effect: Allow
@@ -175,7 +169,7 @@ Resources:
           - Effect: Allow
             Action: "appsync:GraphQL"
             Resource:
-              - !Join [ "", [ !GetAtt GraphQLApi.Arn, "*" ] ]
+              - !Join [ "", [ !GetAtt GraphQLApi.Arn, "/*" ] ]
                 #- "arn:aws:appsync:us-east-1:452684070979:apis/g7n54bvl2fh4djuu6dvmgljlre/*"
           - Effect: Allow
             Resource: "*"
@@ -204,26 +198,26 @@ Resources:
               "ForAnyValue:StringLike":
                 "cognito-identity.amazonaws.com:amr": "unauthenticated"
 
-    CognitoUnAuthorizedUserPolicy:
-      Type: AWS::IAM::ManagedPolicy
-      DependsOn:
-        - LoginLambda
-        - GenerateTokenLambda
-      Properties:
-        Description: Managed policy for UnAuthorized CornChat users
-        PolicyDocument:
-          Version: 2012-10-17
-          Statement:
-            - Effect: Allow
-              Action: "lambda:InvokeFunction"
-              Resource:
-                - !GetAtt LoginLambda.Arn
-                - !GetAtt GenerateTokenLambda.Arn
-            - Effect: Allow
-              Resource: "*"
-              Action:
-                - "mobileanalytics:PutEvents"
-                - "cognito-sync:*"
+  CognitoUnAuthorizedUserPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    DependsOn:
+      - LoginLambda
+      - GenerateTokenLambda
+    Properties:
+      Description: Managed policy for UnAuthorized CornChat users
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action: "lambda:InvokeFunction"
+            Resource:
+              - !GetAtt LoginLambda.Arn
+              - !GetAtt GenerateTokenLambda.Arn
+          - Effect: Allow
+            Resource: "*"
+            Action:
+              - "mobileanalytics:PutEvents"
+              - "cognito-sync:*"
 
 
 
@@ -315,10 +309,11 @@ Resources:
       - GenerateTokenRole
       - GenerateTokenPolicy
     Properties:
+      FunctionName: !Sub ${AppName}-GenerateTokenLambda
       Description: Allow users to generate a CornChat API token by providing a valid HipChat User ID and HipChat OAuth token
       Code:
         S3Bucket: "cornchat-private"
-        S3Key: !Sub "cloudformation/${AppName}/lambda/GenerateToken.zip"
+        S3Key: !Sub "cloudformation/${AppName}-stack/lambda/GenerateToken.js"
       Role: !GetAtt GenerateTokenRole.Arn
       Timeout: 10
       Handler: "index.handler"
@@ -330,7 +325,7 @@ Resources:
     DependsOn:
       - DynamoDBTableApiTokens
     Properties:
-      Description: Managed policy to allow AWS AppSync to access the tables created by this template.
+      Description: Specifies which resources the "GenerateToken" lambda function can access.
       Path: /appsync/
       PolicyDocument:
         Version: 2012-10-17
@@ -339,7 +334,7 @@ Resources:
             Action:
               - dynamodb:PutItem
               - dynamodb:UpdateItem
-            Resource: !Join [ "", [ !GetAtt DynamoDBTableApiTokens.Arn, "*" ] ]
+            Resource: !GetAtt DynamoDBTableApiTokens.Arn
           - Effect: Allow
             Sid: ""
             Resource: "*"
@@ -367,14 +362,15 @@ Resources:
   LoginLambda:
     Type: "AWS::Lambda::Function"
     DependsOn:
-      - LoginRole
-      - LoginPolicy
+      - LoginLambdaRole
+      - LoginLambdaPolicy
     Properties:
+      FunctionName: !Sub ${AppName}-LoginLambda
       Description: Allow users to login with a CornChat API Token and get a federated Cognito session token.
       Code:
         S3Bucket: "cornchat-private"
-        S3Key: !Sub "cloudformation/${AppName}/lambda/Login.zip"
-      Role: !GetAtt LoginRole.Arn
+        S3Key: !Sub "cloudformation/${AppName}-stack/lambda/Login.js"
+      Role: !GetAtt LoginLambdaRole.Arn
       Timeout: 10
       Handler: "index.handler"
       Runtime: "nodejs8.10"
@@ -386,18 +382,25 @@ Resources:
       - IdentityPool
       - DynamoDBTableApiTokens
     Properties:
-      Description: Managed policy to allow AWS AppSync to access the tables created by this template.
+      Description: Specifies which resources the "Login" lambda function can access.
       PolicyDocument:
         Version: 2012-10-17
         Statement:
           - Effect: Allow
             Action:
               - dynamodb:GetItem
-            Resource: !Join [ "", [ !GetAtt DynamoDBTableApiTokens.Arn, "*" ] ]
+            Resource: !GetAtt DynamoDBTableApiTokens.Arn
           - Effect: Allow
             Action:
               - "cognito-identity:GetOpenIdTokenForDeveloperIdentity"
-            Resource: !GetAtt IdentityPool.Arn
+            Resource: !Join
+              - ''
+              - - "arn:aws:cognito-identity:"
+                - !Ref AWS::Region
+                - ':'
+                - !Ref AWS::AccountId
+                - ":identitypool/"
+                - !Ref IdentityPool
           - Effect: Allow
             Sid: ""
             Resource: "*"

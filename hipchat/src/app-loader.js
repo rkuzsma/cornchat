@@ -7,6 +7,12 @@ import App from './app';
 (function () {
   log("----------------");
   log("Loading CornChat");
+  log(" ENV:");
+  log("  CORNCHAT_AWS_REGION: " + CORNCHAT_AWS_REGION);
+  log("  CORNCHAT_APP_NAME: " + CORNCHAT_APP_NAME);
+  log("  CORNCHAT_IDENTITY_POOL_ID: " + CORNCHAT_IDENTITY_POOL_ID);
+  log("  CORNCHAT_GRAPHQL_ENDPOINT_URL: " + CORNCHAT_GRAPHQL_ENDPOINT_URL);
+  
   if (module.hot) { // run with "npm run start:dev" to enable
     module.hot.accept();
     // In a browser, e.g. https://localhost:8080/test.html, HMR works as expected.

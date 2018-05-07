@@ -1,4 +1,3 @@
-import Constants from './constants';
 import log from './logger';
 import AWS from 'aws-sdk';
 import HipchatWindow from './hipchat-window';
@@ -17,7 +16,7 @@ class ApiToken {
       log("ApiToken: generateToken(" + hipchatUserId + ")");
       var lambda = new AWS.Lambda();
       lambda.invoke({
-        FunctionName: 'LambdAuthGenerateApiToken',
+        FunctionName: CORNCHAT_APP_NAME + '-GenerateTokenLambda',
         Payload: JSON.stringify({
           hipchatUserId: hipchatUserId,
           hipchatOauthAccessToken: hipchatOauthAccessToken
@@ -38,7 +37,7 @@ class ApiToken {
       log("ApiToken: loginWithApiToken(" + apiToken + ")");
       var lambda = new AWS.Lambda();
       lambda.invoke({
-        FunctionName: 'LambdAuthApiTokenLogin',
+        FunctionName: CORNCHAT_APP_NAME + '-LoginLambda',
         Payload: JSON.stringify({
           apiToken: apiToken
         })
@@ -81,7 +80,7 @@ class ApiToken {
         AWS.config.credentials.params.IdentityPoolId)) {
       log("ApiToken: Resetting AWS Cognito Credentials");
       var anonymousCognitoCreds = new AWS.CognitoIdentityCredentials({
-        IdentityPoolId: Constants.cornchat_identity_pool_id,
+        IdentityPoolId: CORNCHAT_IDENTITY_POOL_ID,
         IdentityId: null
       });
       // Cognito caches identityId in localStorage:
@@ -92,7 +91,7 @@ class ApiToken {
       // has an identityId, the login lambda will find it and reuse it later.
       anonymousCognitoCreds.clearCachedId();
       AWS.config.update({
-        region: 'us-east-1',
+        region: CORNCHAT_AWS_REGION,
         credentials: anonymousCognitoCreds
       });
       log("ApiToken: IdentityPoolId: " + AWS.config.credentials.params.IdentityPoolId);

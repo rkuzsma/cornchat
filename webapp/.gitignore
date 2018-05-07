@@ -1,3 +1,5 @@
 iam/edit/
 www/edit/
 build/
+node_modules
+dist

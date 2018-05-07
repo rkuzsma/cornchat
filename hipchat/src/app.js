@@ -11,7 +11,6 @@ import ReactDOM from "react-dom";
 import ApiToken from './api-token';
 import { hot } from 'react-hot-loader';
 import MsgElementAutoScroller from './components/msg-element-auto-scroller';
-import Constants from './constants';
 
 // Importing `isomorphic-unfetch` due to `apollo-link-http` raising
 // a warning of not having `fetch` globally available.
@@ -33,49 +32,90 @@ class App extends React.Component {
     this.state = {
       isShowSettings: false,
       tagFilter: null,
-      apiToken: CornChatUser.getApiToken(),
-      client: null
+      apiToken: '',
+      client: null,
+      isFirstTime: true
     };
     this.toggleSettingsDialog = this.toggleSettingsDialog.bind(this);
     this.onSettingsChanged = this.onSettingsChanged.bind(this);
     this.handleFilterByTag = this.handleFilterByTag.bind(this);
+    this.refreshAppSyncClient = this.refreshAppSyncClient.bind(this);
+    this.handleApiTokenChanged = this.handleApiTokenChanged.bind(this);
+    this.cornChatUserListener = {
+      onApiTokenChanged: this.handleApiTokenChanged
+    }
 
-// TODO Move this to ComponentDidMount because React could error if trying to setState
-// before a component is actually mounted:
-
+  // TODO Move this to ComponentDidMount because React could error if trying to setState
+  // before a component is actually mounted:
     // Activate the Msg Element Resizer watcher so it gets notified first whenever
     // new msg elements are added to the chat room.
     new MsgElementAutoScroller();
-
-    // For first time users, generate a token right off the bat
-    if (CornChatUser.getApiToken() === '') {
-      log("No saved API token. Generating a default API token.");
-      ApiToken.generateTokenForCurrentHipChatUser((err, data) => {
-        if (!err) {
-          var output = JSON.parse(data.Payload);
-          if (output.created) {
-            log("Generated token");
-            CornChatUser.setApiToken(output.apiToken);
-            return;
-          }
-        }
-        log("Failed to generate default API token. " + err);
-      });
-    }
   }
 
   componentDidMount() {
+    CornChatUser.addListener(this.cornChatUserListener);
+    if (this.state.isFirstTime) {
+      this.setState({isFirstTime: false});
+      if (CornChatUser.getApiToken() === '') {
+        log("No saved API token for first time user. Generating a default API token.");
+        CornChatUser.regenerateApiToken();
+      }
+    }
+  }
 
+  componentWillUnmount() {
+    CornChatUser.removeListener(this.cornChatUserListener);
+  }
+
+  render() {
+    log("App.render()");
+
+    const LogoAndSettings = (
+      <div>
+        <LogoPortal>
+          <Logo onClick={this.toggleSettingsDialog} />
+        </LogoPortal>
+        <div>
+          <SettingsDialog
+            onClose={this.toggleSettingsDialog}
+            show={this.state.isShowSettings}
+            token={this.state.apiToken}
+            onSettingsChanged={this.onSettingsChanged} />
+        </div>
+      </div>
+    );
+
+    if (this.state.client == null || this.state.apiToken == null) {
+      return LogoAndSettings;
+    }
+    else {
+      return (
+        <div>
+          {LogoAndSettings}
+          <ApolloProvider client={this.state.client}>
+            <Rehydrated>
+              <div>
+                <TagFilter tag={this.state.tagFilter} />
+                <CornCobsContainer onFilterByTag={this.handleFilterByTag} />
+              </div>
+            </Rehydrated>
+          </ApolloProvider>
+        </div>
+       );
+     }
+  }
+
+  refreshAppSyncClient() {
     CornChatUser.withAuthenticatedUser((err, authUser) => {
       if (err) {
-        log("AWSAppSyncClient init failed, authentication error: " + err);
+        log("AWSAppSyncClient refresh failed, authentication error: " + err);
       }
       try {
-        log("Initializing AWSAppSyncClient");
+        log("AWSAppSyncClient refreshing");
         var client = new AWSAppSyncClient({
           disableOffline: false,
-          url: Constants.graphql_endpoint,
-          region: Constants.aws_region,
+          url: CORNCHAT_GRAPHQL_ENDPOINT_URL,
+          region: CORNCHAT_AWS_REGION,
           auth: {
             // See: https://docs.aws.amazon.com/appsync/latest/devguide/security.html
             type: "AWS_IAM",
@@ -85,38 +125,16 @@ class App extends React.Component {
         this.setState({client: client});
       }
       catch(err) {
-        log("AWSAppSyncClient init error: " + err);
+        log("AWSAppSyncClient refresh error: " + err);
       }
     });
   }
 
-  render() {
-    log("App.render()");
-    if (this.state.client == null) return null;
-
-    return (
-      <ApolloProvider client={this.state.client}>
-        <Rehydrated>
-
-          <div>
-            <TagFilter tag={this.state.tagFilter} />
-            <div>
-              <SettingsDialog
-                onClose={this.toggleSettingsDialog}
-                show={this.state.isShowSettings}
-                token={this.state.apiToken}
-                onSettingsChanged={this.onSettingsChanged} />
-            </div>
-            <LogoPortal>
-              <Logo onClick={this.toggleSettingsDialog} />
-            </LogoPortal>
-            <CornCobsContainer onFilterByTag={this.handleFilterByTag} />
-          </div>
-
-        </Rehydrated>
-      </ApolloProvider>
-     );
-
+  handleApiTokenChanged(prev, current) {
+    if (this.state.apiToken !== current) {
+      this.setState({apiToken: current});
+      this.refreshAppSyncClient();
+    }
   }
 
   toggleSettingsDialog() {
@@ -131,7 +149,6 @@ class App extends React.Component {
   handleFilterByTag(tag) {
     this.setState({ tagFilter: this.state.tagFilter === tag ? null : tag });
   }
-
 }
 
 export default hot(module)(App);
