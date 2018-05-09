@@ -12,17 +12,35 @@ query GetMsgInfos {
 }
 
 
-query GetMsgInfo {
-   getMsgInfo(mid: "699a1266-c937-44d8-bf54-2fa40c59005c") {
-     mid
-     reactions {
-       emoji
-     }
-     tags {
-       name
-     }
-   }
+query getMsgInfo($mid: ID!) {
+  getMsgInfo(mid: $mid) {
+    mid
+    reactions {
+      emoji
+    }
+    tags {
+      name
+    }
+  }
 }
+variables:
+{
+  "mid": "7bee6cf8-f144-40c7-99f8-b6714b15a8cf"
+}
+
+query getMsgInfos($mids: [ID!]) {
+  getMsgInfos(mids: $mids) {
+    mid
+  	tags {
+      name
+    }
+  }
+}
+variables:
+{
+  "mids": ["7bee6cf8-f144-40c7-99f8-b6714b15a8cf"]
+}
+//  "[{\"mid\":{\"S\":\"7bee6cf8-f144-40c7-99f8-b6714b15a8cf\"}}]",
 
 mutation addTag {
    addTag(mid: "699a1266-c937-44d8-bf54-2fa40c59005c",

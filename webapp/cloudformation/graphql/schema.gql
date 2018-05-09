@@ -10,8 +10,8 @@ type Mutation {
 }
 
 type Query {
-  getMsgInfo(mid: String!): MsgInfo
-  getMsgInfos(mids: [String!]): [MsgInfo]
+  getMsgInfo(mid: ID!): MsgInfo
+  getMsgInfos(mids: [ID!]): [MsgInfo]
 }
 
 type Reaction {

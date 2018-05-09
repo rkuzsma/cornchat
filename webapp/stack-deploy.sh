@@ -4,7 +4,7 @@
 #   ./stack-deploy.sh ProdCornChat
 #   ./stack-deploy.sh TestCornChat
 
-CORNCHAT_PRIVATE_BUCKET=cornchat-private
+export CORNCHAT_PRIVATE_BUCKET=cornchat-private
 
 set -o pipefail -e
 
@@ -13,22 +13,32 @@ if [[ $# -eq 0 ]] ; then
     exit 1
 fi
 
-APP_NAME=$1
-STACK_NAME=$APP_NAME-stack
+export APP_NAME=$1
+export STACK_NAME=$APP_NAME-stack
 
 echo "Deploying CornChat as '$STACK_NAME'"
 rm -rf ./build
 
 echo "---"
 echo "Building, validating, and uploading templates to s3://$CORNCHAT_PRIVATE_BUCKET/cloudformation/$STACK_NAME/templates"
-mkdir -p ./build/templates
-./esh -o ./build/templates/template.yaml ./cloudformation/templates/template.yaml
-chmod -w ./build/templates/template.yaml
+mkdir -p ./build/cloudformation
+cp -r ./cloudformation ./build
+# Run ESH on all cloudformation files to evaluate embedded <% %> shell expressions
+pushd ./build/cloudformation
+for f in $(find ./graphql -type f); do
+  ../../esh -o $f $f
+  chmod -w $f
+done
+for f in $(find ./templates -type f); do
+  ../../esh -o $f $f
+  chmod -w $f
+done
+popd
 aws cloudformation validate-template \
-  --template-body file://build/templates/template.yaml
+  --template-body file://build/cloudformation/templates/template.yaml
 
 # Copy our cloudformation templates into the bucket
-aws s3 sync ./build/templates/ s3://$CORNCHAT_PRIVATE_BUCKET/cloudformation/$STACK_NAME/templates
+aws s3 sync ./build/cloudformation/templates/ s3://$CORNCHAT_PRIVATE_BUCKET/cloudformation/$STACK_NAME/templates
 echo "Templates uploaded"
 
 echo "----"

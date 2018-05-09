@@ -102,7 +102,7 @@ class MsgElementAutoScroller {
       var element = item.msgEl.closest('div.msg-status');
       if (!element.CORN_prevHeight) {
         element.CORN_prevHeight = element.offsetHeight;
-        log("MsgElementAutoScroller: Initialized prevHeight: " + element.CORN_prevHeight);
+        //log("MsgElementAutoScroller: Initialized prevHeight: " + element.CORN_prevHeight);
       }
       var sensor = new ResizeSensor(element, () => {
         var newHeight = element.offsetHeight;
@@ -110,7 +110,7 @@ class MsgElementAutoScroller {
         element.CORN_prevHeight = newHeight;
         // Only account for elements that are visible in the hipchat view.
         if (diff != 0 && this.isMsgElementInsideTheFold(item.msgEl)) {
-          console.log("MsgElementAutoScroller: Resize " + diff);
+          //log("MsgElementAutoScroller: Resize " + diff);
           $('div.hc-chat-scrollbox')[0].scrollTop += diff;
         }
       });

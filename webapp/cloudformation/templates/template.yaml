@@ -69,7 +69,7 @@ Resources:
               - dynamodb:Scan
               - dynamodb:BatchGetItem
               - dynamodb:BatchWriteItem
-            Resource: !Join [ "", [ !GetAtt DynamoDBTableMsgInfo.Arn, "/*" ] ]
+            Resource: !GetAtt DynamoDBTableMsgInfo.Arn
 
   DynamoDBTableMsgInfo:
     Type: "AWS::DynamoDB::Table"

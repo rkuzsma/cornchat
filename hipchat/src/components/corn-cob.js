@@ -1,6 +1,5 @@
 import log from '../logger';
 import PropTypes from 'prop-types';
-import ThumbsUpButton from './thumbs-up-button';
 import AddTagButton from './add-tag-button';
 import Tags from './tags';
 import TagsPortal from './tags-portal';
@@ -10,7 +9,6 @@ import AddReactionContainer from './add-reaction-container';
 class CornCob extends React.Component {
   constructor(props) {
     super(props);
-    this.handleThumbsUp = this.handleThumbsUp.bind(this);
     this.handleAddTag = this.handleAddTag.bind(this);
     this.state = {
       isSavingTags: false
@@ -41,7 +39,6 @@ class CornCob extends React.Component {
     return(
       <div ref={this.cornCobRef}>
         <AddReactionContainer msgId={this.props.msgId} roomId={this.props.roomId} />
-        <ThumbsUpButton onThumbsUp={this.handleThumbsUp} thumbs={this.props.thumbs} />
         {addTagButton}
         <TagsPortal msgEl={this.props.msgEl}>
           <Tags msgEl={this.props.msgEl} tags={this.props.tags} onFilterByTag={this.props.onFilterByTag} />
@@ -53,12 +50,10 @@ class CornCob extends React.Component {
 
 CornCob.propTypes = {
   tags: PropTypes.array,
-  thumbs: PropTypes.string,
   onFilterByTag: PropTypes.func.isRequired,
   msgId: PropTypes.string.isRequired,
   msgEl: PropTypes.object.isRequired,
   onAddTag: PropTypes.func.isRequired,
-  onThumbsUp: PropTypes.func.isRequired,
   recentTagNames: PropTypes.array,
   roomId: PropTypes.string.isRequired
 };

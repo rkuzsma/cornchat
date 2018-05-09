@@ -5,16 +5,17 @@ RequestMappingTemplate: |
       $util.qr($map.put("mid", $util.dynamodb.toString($mid)))
       $util.qr($mids.add($map))
   #end
+  ##$util.appendError("debug logging: midsMap=", $util.toJson($mids))
 
   {
       "version" : "2018-05-29",
       "operation" : "BatchGetItem",
       "tables" : {
-          "CornChatMsgInfo": {
+          "<% printf $APP_NAME%>_MsgInfo": {
               "keys": $util.toJson($mids),
               "consistentRead": true
           }
       }
   }
 ResponseMappingTemplate: |
-  $util.toJson($ctx.result.data.CornChatMsgInfo)
+  $util.toJson($ctx.result.data.<% printf $APP_NAME%>_MsgInfo)

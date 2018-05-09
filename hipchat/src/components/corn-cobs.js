@@ -18,9 +18,7 @@ class CornCobs extends React.Component {
       <CornCobPortal msgEl={item.msgEl} key={item.msgId} >
         <CornCob
           tags={this.props.tags[item.msgId]}
-          thumbs={this.props.thumbs[item.msgId]}
           onFilterByTag={this.props.onFilterByTag}
-          onThumbsUp={this.props.onThumbsUp}
           onAddTag={this.props.onAddTag}
           msgId={item.msgId}
           msgEl={item.msgEl}

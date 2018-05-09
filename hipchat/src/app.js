@@ -3,6 +3,7 @@ import log from './logger';
 import LogoPortal from './components/logo-portal';
 import Logo from './components/logo';
 import SettingsDialog from './components/settings-dialog';
+import MsgElementsContainer from './components/msg-elements-container';
 import CornCobsContainer from './components/corn-cobs-container';
 import TagFilter from './components/tag-filter';
 import CornChatUser from './cornchat-user';
@@ -54,13 +55,14 @@ class App extends React.Component {
 
   componentDidMount() {
     CornChatUser.addListener(this.cornChatUserListener);
-    if (this.state.isFirstTime) {
-      this.setState({isFirstTime: false});
-      if (CornChatUser.getApiToken() === '') {
-        log("No saved API token for first time user. Generating a default API token.");
-        CornChatUser.regenerateApiToken();
-      }
+    if (this.state.isFirstTime && (CornChatUser.getApiToken() === '')) {
+      log("No saved API token for first time user. Generating a default API token.");
+      CornChatUser.regenerateApiToken();
     }
+    else {
+      this.handleApiTokenChanged(this.state.apiToken, CornChatUser.getApiToken());
+    }
+    this.setState({isFirstTime: false});
   }
 
   componentWillUnmount() {
@@ -96,7 +98,9 @@ class App extends React.Component {
             <Rehydrated>
               <div>
                 <TagFilter tag={this.state.tagFilter} />
-                <CornCobsContainer onFilterByTag={this.handleFilterByTag} />
+                <MsgElementsContainer>
+                  <CornCobsContainer onFilterByTag={this.handleFilterByTag} />
+                </MsgElementsContainer>
               </div>
             </Rehydrated>
           </ApolloProvider>

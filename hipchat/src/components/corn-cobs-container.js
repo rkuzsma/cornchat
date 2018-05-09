@@ -3,103 +3,136 @@ import ReactDOM from "react-dom";
 import Constants from '../constants';
 import PropTypes from 'prop-types';
 import MsgElementsStore from '../msg-elements-store';
-import MsgInfoStore from '../msg-info-store';
 import CornCobs from './corn-cobs';
 import HipchatWindow from '../hipchat-window';
+
+import GetMsgInfosQuery from '../queries/getMsgInfos';
+import { graphql } from 'react-apollo';
+import AddTagMutation from '../mutations/addTag';
+import { compose } from 'react-apollo';
 
 class CornCobsContainer extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      msgElements: [],
-      tags: {},
-      thumbs: {},
-      recentTagNames: [],
       roomId: ''
     }
-    this.msgElementStore = new MsgElementsStore();
-    this.msgInfoStore = new MsgInfoStore();
-    this.handleThumbsUp = this.handleThumbsUp.bind(this);
     this.handleAddTag = this.handleAddTag.bind(this);
-  }
-
-  handleThumbsUp(msgId) {
-    this.msgInfoStore.incrementThumbs(msgId, (err, data) => {
-      if (err) {
-        log("Error incrementing counter: " + err);
-        alert('Error incrementing counter in CornChat');
-      }
-      else {
-        log("Incremented thumbs counter for msgId " + msgId + ". result: " + data);
-      }
-    });
+    this.distinctTagsByMid = this.distinctTagsByMid.bind(this);
+    this.recentTagNames = this.recentTagNames.bind(this);
   }
 
   handleAddTag(tag, msgId) {
-    this.msgInfoStore.storeTag(msgId, tag.name, (err, data) => {
-      if (err) {
-        log("Error storing tag: " + err);
-        alert('Error storing tag in CornChat');
-      }
-      else {
-        log("Stored tag " + tag.name + " for msgId " + msgId + ". id: " + data);
+    const tagData = {
+      mid: msgId,
+      room: this.state.roomId,
+      name: tag.name
+    }
+    // TODO Error handling
+    return this.props.mutate({
+      variables: {...tagData},
+      optimisticResponse: {
+        __typename: 'Mutation',
+        addTag: { ...tagData,  __typename: 'Tag' }
+      },
+      update: (proxy, { data: { newReaction } }) => {
+        // TODO
+        /*const data = proxy.readQuery({ query: GetMsgInfoQuery });
+        data.listMsgInfo.items.push(newReaction);
+        proxy.writeQuery({ query: GetMsgInfoQuery, data });*/
       }
     });
   }
 
   componentDidMount() {
     this.setState({
-      msgElements: this.msgElementStore.recentElements(),
-      tags: this.msgInfoStore.recentTags(),
-      recentTagNames: Object.keys(this.msgInfoStore.recentDistinctTagsByName()),
-      thumbs: this.msgInfoStore.recentThumbs(),
       roomId: HipchatWindow.roomId()
     });
-    this.msgElementStoreListener = {onElementsChanged: ((prevElements, currentElements) => {
-      log("CornCobsContainer: updating msgElements");
-      this.setState({msgElements: currentElements});
-    })};
-    this.msgInfoStoreListener = {
-      onTagsChanged: ((prev, current) => {
-        log("CornCobsContainer: updating tags");
-        this.setState({
-          tags: current,
-          recentTagNames: Object.keys(this.msgInfoStore.recentDistinctTagsByName())
-        });
-      }),
-      onThumbsChanged: ((prev, current) => {
-        log("CornCobsContainer: updating thumbs");
-        this.setState({
-          thumbs: current
-        });
-      })
-    };
-    this.msgElementStore.addListener(this.msgElementStoreListener);
-    this.msgInfoStore.addListener(this.msgInfoStoreListener);
   }
 
   componentWillUnmount() {
-    this.msgElementStore.removeListener(this.msgElementStoreListener);
-    this.msgInfoStore.removeListener(this.msgInfoStoreListener);
+  }
+
+  // Returns de-duped tags fetched from graphql, keyed off the msginfo mid, e.g.:
+  // Given this.props.data: {
+  //   getMsgInfos: [
+  //     null,
+  //     null,
+  //     {mid: "699a1266-c937-44d8-bf54-2fa40c59005c", tags: [{name: "Red"},{name: "Blue"}] },
+  //     {mid: "deadbeef-c937-44d8-bf54-bf54bf54bf54", tags: [{name: "Green"},{name: "Green"}] }
+  //   ]
+  // }
+  // Return:
+  // {"699a1266-c937-44d8-bf54-2fa40c59005c": [{name: "Red"},{name: "Blue"}],
+  //  "deadbeef-c937-44d8-bf54-bf54bf54bf54": [{name: "Green"}] } }
+  distinctTagsByMid() {
+    let tags = {};
+    if (this.props.data && this.props.data.getMsgInfos) {
+      this.props.data.getMsgInfos.forEach((midItem) => {
+        if (midItem && midItem.mid && midItem.tags) {
+          // filter out duplicate tags
+          const distinctTags = {};
+          if (midItem.tags) {
+            midItem.tags.forEach(tag => {
+              distinctTags[tag.name] = tag;
+            });
+          }
+          tags[midItem.mid] = Object.values(distinctTags);
+        }
+      });
+    }
+    return tags;
+  }
+
+  // returns e.g.: ["Red", "Blue", "Green"]
+  recentTagNames() {
+    const distinctTags = {};
+    Object.values(this.distinctTagsByMid()).forEach(tagsArray => {
+      tagsArray.forEach(tag => distinctTags[tag.name] = tag);
+    });
+    return Object.keys(distinctTags);
   }
 
   render() {
+    if (this.props.data.error) {
+      log("CornCobsContainer: Error in graphql data: " + this.props.data.error);
+      return;
+    }
+
+    let tags = {};
+    let recentTagNames = [];
+    if (!this.props.data.loading) {
+      tags = this.distinctTagsByMid();
+      recentTagNames = this.recentTagNames();
+    }
+
     return (
       <CornCobs
-        tags={this.state.tags}
-        thumbs={this.state.thumbs}
-        msgElements={this.state.msgElements}
+        tags={tags}
+        msgElements={this.props.msgElements}
         onFilterByTag={this.props.onFilterByTag}
-        onThumbsUp={this.handleThumbsUp}
         onAddTag={this.handleAddTag}
-        recentTagNames={this.state.recentTagNames}
+        recentTagNames={recentTagNames}
         roomId={this.state.roomId} />
     );
   }
 }
 
 CornCobsContainer.propTypes = {
-  onFilterByTag: PropTypes.func.isRequired
+  onFilterByTag: PropTypes.func.isRequired,
+  msgElements: PropTypes.array.isRequired
 };
 
-export default CornCobsContainer;
+// Populate this.props.data
+export default compose(
+  graphql(GetMsgInfosQuery, {
+    options: (ownProps) => ({
+      fetchPolicy: 'cache-and-network',
+      variables: {
+        // TODO Prevent err "Keys can't be empty"
+        mids: ownProps.msgElements.map((item) => item.msgId)
+      }
+    })
+  }),
+  graphql(AddTagMutation)
+)(CornCobsContainer);

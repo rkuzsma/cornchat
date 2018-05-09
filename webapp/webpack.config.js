@@ -10,13 +10,13 @@ const envVar = (varName, defaultVal) => {
 }
 
 module.exports = {
-  entry: fs.readdirSync(path.join(__dirname, "./lambdas"))
+  entry: fs.readdirSync(path.join(__dirname, "./lambda"))
          .filter(filename => /\.js$/.test(filename))
          .map(filename => {
            var entry = {};
            entry[filename.replace(".js", "")] = path.join(
              __dirname,
-             "./lambdas/",
+             "./lambda/",
              filename
            );
            return entry;

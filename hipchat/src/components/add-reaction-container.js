@@ -1,6 +1,6 @@
 import { graphql } from 'react-apollo';
-import AddReactionMutation from '../mutations/AddReaction';
-import GetMsgInfoQuery from '../queries/GetMsgInfo';
+import AddReactionMutation from '../mutations/addReaction';
+import GetMsgInfoQuery from '../queries/getMsgInfo';
 import AddReactionButton from'./add-reaction-button';
 import PropTypes from 'prop-types';
 

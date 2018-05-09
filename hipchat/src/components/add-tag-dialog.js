@@ -1,6 +1,5 @@
 import log from '../logger';
 import PropTypes from 'prop-types';
-import MsgInfoStore from '../msg-info-store';
 import { Creatable } from 'react-select';
 import 'react-select/dist/react-select.css';
 import ClickOutside from 'react-click-outside';
@@ -8,7 +7,6 @@ import ClickOutside from 'react-click-outside';
 class AddTagDialog extends React.Component {
   constructor(props) {
     super(props);
-    this.msgInfoStore = new MsgInfoStore();
     this.state = {
       tagName: ''
     };
