@@ -10,6 +10,7 @@ export default gql`
         }
         reactions {
           emoji
+          userId
         }
       }
     }

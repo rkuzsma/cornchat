@@ -9,7 +9,13 @@ export default gql`
      addTag(mid: $mid,
              room: $room,
              name: $name) {
-         mid
+       mid
+       tags {
+         name
+       }
+       reactions {
+         emoji
+       }
      }
   }
 `

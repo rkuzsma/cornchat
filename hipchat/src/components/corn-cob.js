@@ -3,6 +3,8 @@ import PropTypes from 'prop-types';
 import AddTagButton from './add-tag-button';
 import Tags from './tags';
 import TagsPortal from './tags-portal';
+import ReactionsPortal from './reactions-portal';
+import Reactions from './reactions';
 import React from 'react';
 import AddReactionContainer from './add-reaction-container';
 
@@ -43,6 +45,9 @@ class CornCob extends React.Component {
         <TagsPortal msgEl={this.props.msgEl}>
           <Tags msgEl={this.props.msgEl} tags={this.props.tags} onFilterByTag={this.props.onFilterByTag} />
         </TagsPortal>
+        <ReactionsPortal msgEl={this.props.msgEl}>
+          <Reactions msgEl={this.props.msgEl} reactions={this.props.reactions} />
+        </ReactionsPortal>
       </div>
     );
   }
@@ -50,6 +55,7 @@ class CornCob extends React.Component {
 
 CornCob.propTypes = {
   tags: PropTypes.array,
+  reactions: PropTypes.object,
   onFilterByTag: PropTypes.func.isRequired,
   msgId: PropTypes.string.isRequired,
   msgEl: PropTypes.object.isRequired,

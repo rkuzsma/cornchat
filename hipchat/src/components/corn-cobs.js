@@ -18,6 +18,7 @@ class CornCobs extends React.Component {
       <CornCobPortal msgEl={item.msgEl} key={item.msgId} >
         <CornCob
           tags={this.props.tags[item.msgId]}
+          reactions={this.props.reactions[item.msgId]}
           onFilterByTag={this.props.onFilterByTag}
           onAddTag={this.props.onAddTag}
           msgId={item.msgId}
@@ -38,6 +39,7 @@ CornCobs.propTypes = {
   onThumbsUp: PropTypes.func.isRequired,
   onAddTag: PropTypes.func.isRequired,
   recentTagNames: PropTypes.array,
+  reactions: PropTypes.object.isRequired,
   roomId: PropTypes.string.isRequired
 };
 

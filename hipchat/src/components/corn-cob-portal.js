@@ -26,6 +26,7 @@ class CornCobPortal extends React.Component {
       htmlStructure += '</div>';
       $(msgEl).append($(htmlStructure));
       $(msgEl).find('div.CORN-msg').append(msgDivs);
+      $(msgEl).find('div.CORN-msg').append($('<div class="CORN-reactions-portal"></div>'));
     }
     return $(msgEl).find('div.CORN-cob')[0];
   }

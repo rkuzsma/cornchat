@@ -1,10 +1,7 @@
 import { graphql } from 'react-apollo';
 import AddReactionMutation from '../mutations/addReaction';
-import GetMsgInfoQuery from '../queries/getMsgInfo';
 import AddReactionButton from'./add-reaction-button';
 import PropTypes from 'prop-types';
-
-const withReactionMutation = graphql(AddReactionMutation);
 
 class AddReactionContainer extends React.Component {
   constructor(props) {
@@ -19,17 +16,9 @@ class AddReactionContainer extends React.Component {
       emoji: reaction.emoji
     }
     return this.props.mutate({
-      variables: {...reactionData},
-      optimisticResponse: {
-        __typename: 'Mutation',
-        addReaction: { ...reactionData,  __typename: 'Reaction' }
-      },
-      update: (proxy, { data: { newReaction } }) => {
-        // TODO
-        /*const data = proxy.readQuery({ query: GetMsgInfoQuery });
-        data.listMsgInfo.items.push(newReaction);
-        proxy.writeQuery({ query: GetMsgInfoQuery, data });*/
-      }
+      variables: {...reactionData}
+      // CornCobsContainer mutation subscriber will watch for updates,
+      // so it's overkill to refetch queries or update the cache here.
     });
   }
 
@@ -43,4 +32,4 @@ AddReactionContainer.propTypes = {
   roomId: PropTypes.string.isRequired
 };
 
-export default withReactionMutation(AddReactionContainer);
+export default graphql(AddReactionMutation)(AddReactionContainer);

@@ -9,7 +9,14 @@ export default gql`
      addReaction(mid: $mid,
                  room: $room,
                  emoji: $emoji) {
-         mid
+       mid
+       tags {
+         name
+       }
+       reactions {
+         emoji
+         userId
+       }
      }
   }
 `

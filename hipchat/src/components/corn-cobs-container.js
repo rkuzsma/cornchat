@@ -27,19 +27,21 @@ class CornCobsContainer extends React.Component {
       room: this.state.roomId,
       name: tag.name
     }
-    // TODO Error handling
     return this.props.mutate({
       variables: {...tagData},
-      optimisticResponse: {
-        __typename: 'Mutation',
-        addTag: { ...tagData,  __typename: 'Tag' }
-      },
-      update: (proxy, { data: { newReaction } }) => {
-        // TODO
-        /*const data = proxy.readQuery({ query: ListMsgInfosQuery });
-        data.listMsgInfo.items.push(newReaction);
-        proxy.writeQuery({ query: ListMsgInfosQuery, data });*/
-      }
+      refetchQueries: [ { query: ListMsgInfosQuery }]
+      // Overkill for this app, but if desired, we could
+      // update the client state without re-querying:
+      // optimisticResponse: {
+      //   __typename: 'Mutation',
+      //   addTag: { ...tagData,  __typename: 'MsgInfo' }
+      // },
+      // update: (proxy, updates) => {
+      //   const data = proxy.readQuery({ query: ListMsgInfosQuery });
+      //   const updatedMsgInfo = updates.data.addTag;
+      //   data.listMsgInfo.items.push(updatedMsgInfo);
+      //   proxy.writeQuery({ query: ListMsgInfosQuery, data });
+      // }
     });
   }
 
@@ -50,7 +52,6 @@ class CornCobsContainer extends React.Component {
   }
 
   componentWillMount() {
-    log("subscribing!!!!!!!!!!!!!!");
     this.unsubscribe = this.props.subscribeToNewMsgInfo();
   }
 
@@ -69,23 +70,19 @@ class CornCobsContainer extends React.Component {
       return null;
     }
 
-    log("!!! render() props:");
-    console.dir(this.props);
-
     let tags = {};
     let recentTagNames = [];
+    let reactions = {};
     if (this.props.msgInfos) {
-      log("!!!Got msgInfos");
       tags = this.props.msgInfos.tagsByMid;
       recentTagNames = this.props.msgInfos.recentTagNames;
-    }
-    else {
-      log("!!! No MsgInfos");
+      reactions = this.props.msgInfos.reactionsByMid;
     }
 
     return (
       <CornCobs
         tags={tags}
+        reactions={reactions}
         msgElements={this.props.msgElements}
         onFilterByTag={this.props.onFilterByTag}
         onAddTag={this.handleAddTag}
@@ -122,13 +119,16 @@ CornCobsContainer.propTypes = {
 const mapResultsToProps = ({ data, ownProps }) => {
   let result = {
     tagsByMid: {},
-    recentTagNames: []
+    recentTagNames: [],
+    reactionsByMid: {}
   }
   let tags = {};
+  let reactions = {};
   let allDistinctTags = {};
   if (data && !data.loading && data.listMsgInfos) {
     data.listMsgInfos.items.forEach((midItem) => {
-      if (midItem && midItem.mid && midItem.tags) {
+      if (midItem && midItem.mid) {
+
         // filter out duplicate tags
         const distinctTags = {};
         if (midItem.tags) {
@@ -138,10 +138,23 @@ const mapResultsToProps = ({ data, ownProps }) => {
           });
         }
         tags[midItem.mid] = Object.values(distinctTags);
+
+        // filter out duplicate reactions from the same user
+        const distinctReactions = {};
+        if (midItem.reactions) {
+          midItem.reactions.forEach(reaction => {
+            if (!distinctReactions[reaction.emoji]) {
+              distinctReactions[reaction.emoji] = {};
+            }
+            distinctReactions[reaction.emoji][reaction.userId] = reaction.emoji;
+          });
+        }
+        reactions[midItem.mid] = distinctReactions;
       }
     });
     result.tagsByMid = tags,
     result.recentTagNames = Object.keys(allDistinctTags)
+    result.reactionsByMid = reactions;
   }
   return result;
 }
@@ -150,42 +163,42 @@ const getMids = function(msgElements) {
   return msgElements.map((item) => item.msgId)
 }
 
-// Populate this.props.data
+// Populate this.props.data with GraphQL data
 export default compose(
   graphql(AddTagMutation),
   graphql(ListMsgInfosQuery, {
+    // Specify input variables to the query:
+    options: (ownProps) => ({
+      fetchPolicy: 'cache-and-network',
+      variables: {
+        mids: getMids(ownProps.msgElements)
+      }
+    }),
+    // Handle the response from GraphQL for ListMsgInfosQuery:
     props: (resultProps) => {
-      console.log("props func:");
-      console.dir(resultProps);
       return {
         loading: resultProps.data.loading,
         error: resultProps.data.error,
+        // Convert GraphQL response to a nicer looking data structure:
         msgInfos: mapResultsToProps(resultProps),
+        // Expose a subscription function to listen for updates:
         subscribeToNewMsgInfo: (params) => {
           resultProps.data.subscribeToMore({
             document: SubMsgInfo,
             updateQuery: (prev, current) => {
-              // { subscriptionData: { data : { changedMsgInfo } } }
-              log("UPDATE_QUERY!!!");
-              console.dir(current);
+              let { subscriptionData: { data : { changedMsgInfo } } } = current;
               return {
                 ...prev,
                 listMsgInfos: {
                   __typename: 'MsgInfoList',
                   // Add the changed item into the items array
-                  items: [changedMsgInfo, ...prev.listMsgInfos.items.filter(item => item.mid !== changedMsgInfo.mid)]
+                  items: [changedMsgInfo, ...prev.listMsgInfos.items.filter(item => item?.mid !== changedMsgInfo.mid)]
                 }
               }
             }
           });
         }
       }
-    },
-    options: (ownProps) => ({
-      fetchPolicy: 'cache-and-network',
-      variables: {
-        mids: getMids(ownProps.msgElements)
-      }
-    })
+    }
   })
 )(CornCobsContainer);
