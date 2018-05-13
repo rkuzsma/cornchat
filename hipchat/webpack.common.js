@@ -1,6 +1,9 @@
+const merge = require('webpack-merge');
 const path = require('path');
 const fs = require('fs');
 const webpack = require('webpack');
+const fetch = require('node-fetch');
+const chalk = require('chalk');
 
 const envVar = (varName, defaultVal) => {
   return process.env[varName] ?
@@ -8,7 +11,48 @@ const envVar = (varName, defaultVal) => {
     defaultVal;
 }
 
-module.exports = {
+// Fetch back-end config and inject constants into our JS source at build time.
+// Public back-end config like identity pool ID and Graph QL API ID are
+// exposed on a public-read JSON file in an S3 bucket.
+// See ../webapp/lambda/WritePublicConfig.js
+// Set $CORNCHAT_APP_NAME in your shell to build against a different back-end.
+const fetchRemoteConfig = () => {
+  // AppName matches the name of a deployed CloudFormation stack.
+  let CORNCHAT_APP_NAME = envVar('CORNCHAT_APP_NAME',
+    "TestCornChat");
+  let CORNCHAT_S3_CONFIG_URL = envVar('CORNCHAT_S3_CONFIG_URL',
+    "https://s3.amazonaws.com/cornchat/public/" + CORNCHAT_APP_NAME + "/public-config/config.json");
+  return fetch(CORNCHAT_S3_CONFIG_URL)
+    .catch(err => {
+      console.error(chalk.bold.red(
+        "\nERROR fetching remote configuration for '" + CORNCHAT_APP_NAME + "' at " + CORNCHAT_S3_CONFIG_URL + ": " + err + "\n"))
+    })
+    .then(res => res.json())
+    .then(json =>  {
+      if (!json.CORNCHAT_APP_NAME) {
+        console.error(chalk.bold.red("\nERROR: Failed to parse remote configuration for '" + CORNCHAT_APP_NAME + "' at " + CORNCHAT_S3_CONFIG_URL + "\n"));
+        return {};
+      }
+      // Wrap values in JSON.stringify because they will be directly injected into src
+      remoteConfig = {
+  			"CORNCHAT_APP_NAME": JSON.stringify(json.CORNCHAT_APP_NAME),
+  			"CORNCHAT_AWS_REGION": JSON.stringify(json.CORNCHAT_AWS_REGION),
+  		  "CORNCHAT_IDENTITY_POOL_ID": JSON.stringify(json.CORNCHAT_IDENTITY_POOL_ID),
+  		  "CORNCHAT_IDENTITY_POOL_DEVELOPER_PROVIDER_NAME": JSON.stringify(json.CORNCHAT_IDENTITY_POOL_DEVELOPER_PROVIDER_NAME),
+  		  "CORNCHAT_GRAPHQL_ENDPOINT_URL": JSON.stringify(json.CORNCHAT_GRAPHQL_ENDPOINT_URL),
+        "CORNCHAT_S3_CONFIG_URL": JSON.stringify(CORNCHAT_S3_CONFIG_URL)
+  		}
+      console.log("Remote config:");
+      console.dir(remoteConfig);
+      return {
+        plugins: [
+          new webpack.DefinePlugin(remoteConfig)
+        ]
+      }
+    });
+}
+
+const commonConfig = {
   context: __dirname,
   entry: './src/app-loader.js',
   output: {
@@ -39,19 +83,13 @@ module.exports = {
         }
       }
     ]
-  },
-  plugins: [
-    new webpack.DefinePlugin({
-      // All default values come from our "TestCornChat" AWS cloudformation stack
-      // To get the values for a stack, in ../webapp run: ./list-env.sh TestCornChat
-      'CORNCHAT_AWS_REGION': JSON.stringify(envVar('CORNCHAT_AWS_REGION',
-          "us-east-1")),
-      'CORNCHAT_APP_NAME': JSON.stringify(envVar('CORNCHAT_APP_NAME',
-          "TestCornChat")),
-      'CORNCHAT_IDENTITY_POOL_ID': JSON.stringify(envVar('CORNCHAT_IDENTITY_POOL_ID',
-          "us-east-1:6d9338ec-3686-466c-a05d-591256b4832b")),
-      'CORNCHAT_GRAPHQL_ENDPOINT_URL': JSON.stringify(envVar('CORNCHAT_GRAPHQL_ENDPOINT_URL',
-          "https://aics5bg7rjgvrcahbotr2lscaq.appsync-api.us-east-1.amazonaws.com/graphql")),
-    })
-  ]
+  }
+}
+
+module.exports = () => {
+  return new Promise((resolve, reject) => {
+    fetchRemoteConfig().then((remoteConfig) => {
+      resolve(merge(remoteConfig, commonConfig));
+    });
+  });
 };

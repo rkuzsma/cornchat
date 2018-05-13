@@ -1,10 +1,10 @@
 const merge = require('webpack-merge');
-const common = require('./webpack.common.js');
+const commonPromise = require('./webpack.common.js');
 const path = require('path');
 const fs = require('fs');
 const webpack = require('webpack');
 
-module.exports = merge(common, {
+const devConfig = {
   // https://localhost:8080/bundle.js
   // https://localhost:8080/cornchat.css
   devServer: {
@@ -26,4 +26,12 @@ module.exports = merge(common, {
     path: path.resolve(__dirname, 'dist')
   },
   mode: 'development'
-});
+}
+
+module.exports = () => {
+  return new Promise((resolve, reject) => {
+    commonPromise().then((commonConfig) => {
+      resolve(merge(commonConfig, devConfig));
+    });
+  });
+}

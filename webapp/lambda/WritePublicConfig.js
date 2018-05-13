@@ -11,6 +11,8 @@ exports.handler = function(event, context, callback) {
 		var s3 = new AWS.S3();
 
 		var publicConfig = {
+			"CORNCHAT_APP_NAME": process.env.CORNCHAT_APP_NAME,
+			"CORNCHAT_AWS_REGION": process.env.CORNCHAT_AWS_REGION,
 		  "CORNCHAT_IDENTITY_POOL_ID": process.env.CORNCHAT_IDENTITY_POOL_ID,
 		  "CORNCHAT_IDENTITY_POOL_DEVELOPER_PROVIDER_NAME": process.env.CORNCHAT_IDENTITY_POOL_DEVELOPER_PROVIDER_NAME,
 		  "CORNCHAT_GRAPHQL_ENDPOINT_URL": process.env.CORNCHAT_GRAPHQL_ENDPOINT_URL
@@ -20,6 +22,7 @@ exports.handler = function(event, context, callback) {
 				Bucket : process.env.PublicConfigS3Bucket,
 				Key : process.env.PublicConfigS3Folder + "/config.json",
 				Body : JSON.stringify(publicConfig),
+				ContentType: "application/json",
 				ACL: 'public-read'
 		}
 

@@ -492,6 +492,7 @@ Resources:
               Service:
                 - lambda.amazonaws.com
 
+  # Publish public env config to, e.g. https://s3.amazonaws.com/cornchat/public/TestCornChat/public-config/config.json
   WritePublicConfigLambda:
     Type: "AWS::Lambda::Function"
     DependsOn:
@@ -507,6 +508,8 @@ Resources:
         S3Key: !Sub ${LambdaS3Folder}/WritePublicConfig.zip
       Environment:
         Variables:
+          CORNCHAT_APP_NAME: !Sub ${AppName}
+          CORNCHAT_AWS_REGION: !Sub ${AWS::Region}
           CORNCHAT_IDENTITY_POOL_ID: !Ref IdentityPool
           CORNCHAT_GRAPHQL_ENDPOINT_URL: !GetAtt GraphQLApi.GraphQLUrl
           CORNCHAT_IDENTITY_POOL_DEVELOPER_PROVIDER_NAME: !Sub login.${AppName}
