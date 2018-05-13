@@ -4,6 +4,10 @@ type MsgInfo {
   reactions: [Reaction]
 }
 
+type MsgInfoList {
+  items: [MsgInfo]
+}
+
 type Mutation {
   addTag(mid: ID!, room: String!, name: String!): MsgInfo
   addReaction(mid: ID!, room: String!, emoji: String!): MsgInfo
@@ -11,7 +15,7 @@ type Mutation {
 
 type Query {
   getMsgInfo(mid: ID!): MsgInfo
-  getMsgInfos(mids: [ID!]): [MsgInfo]
+  listMsgInfos(mids: [ID!]): MsgInfoList
 }
 
 type Reaction {
@@ -20,7 +24,7 @@ type Reaction {
 }
 
 type Subscription {
-  changedMsgInfo(room: String!): MsgInfo
+  changedMsgInfo: MsgInfo
     @aws_subscribe(mutations: ["addTag","addReaction"])
 }
 
@@ -31,4 +35,5 @@ type Tag {
 schema {
   query: Query
   mutation: Mutation
+  subscription: Subscription
 }

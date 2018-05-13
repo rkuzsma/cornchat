@@ -36,6 +36,5 @@
     "mocha": "^2.3.4",
     "webpack": "^1.12.8"
   },
-  "dependencies": {
-  }
+  "dependencies": {}
 }

@@ -2,10 +2,11 @@ console.log('Loading function');
 
 import AWS from "aws-sdk"
 import type {LambdaContext} from "../lib/lambda-types.js";
-import config from "../lib/config.json";
 import https from 'https';
 
 var dynamodb = new AWS.DynamoDB();
+
+const CORNCHAT_TABLE_API_TOKENS = process.env.CORNCHAT_TABLE_API_TOKENS;
 
 // Generates a CornChat API token for a given HipChat User ID and OAuth Access Token.
 // Validates the HipChat User with HipChat.

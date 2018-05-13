@@ -3,7 +3,7 @@
 import assert from "assert";
 
 import {lambdaPromisifier} from "../lib/lambda-promisifier.js"
-import {Login} from "../lambdas/Login.js"
+import {Login} from "../lambda/Login.js"
 
 const promisifiedLogin = lambdaPromisifier(Login);
 

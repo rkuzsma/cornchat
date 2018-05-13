@@ -1,6 +1,7 @@
 
-query GetMsgInfos {
-   getMsgInfos(mids: ["699a1266-c937-44d8-bf54-2fa40c59005c"]) {
+query ListMsgInfos {
+   listMsgInfos(mids: ["7bee6cf8-f144-40c7-99f8-b6714b15a8cf"]) {
+     items {
        mid
        reactions {
          emoji
@@ -8,6 +9,7 @@ query GetMsgInfos {
        tags {
          name
        }
+     }
    }
 }
 

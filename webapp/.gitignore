@@ -1,5 +1,2 @@
-iam/edit/
-www/edit/
-build/
+build
 node_modules
-dist

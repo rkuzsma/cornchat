@@ -3,11 +3,14 @@ console.log('Loading function');
 
 import AWS from "aws-sdk"
 import type {LambdaContext} from "../lib/lambda-types.js";
-import config from "../lib/config.json";
 
 // Get reference to AWS clients
 const dynamodb = new AWS.DynamoDB();
 const cognitoidentity = new AWS.CognitoIdentity();
+
+const CORNCHAT_TABLE_API_TOKENS = process.env.CORNCHAT_TABLE_API_TOKENS;
+const CORNCHAT_IDENTITY_POOL_ID = process.env.CORNCHAT_IDENTITY_POOL_ID;
+const CORNCHAT_IDENTITY_POOL_DEVELOPER_PROVIDER_NAME = process.env.CORNCHAT_IDENTITY_POOL_DEVELOPER_PROVIDER_NAME;
 
 // Validate a CornChat API token that was generated with LambdAuthGenerateApiToken.
 //

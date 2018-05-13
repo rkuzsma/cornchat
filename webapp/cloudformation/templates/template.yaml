@@ -9,6 +9,22 @@ Parameters:
     MinLength: 3
     MaxLength: 20
     AllowedPattern: '^[a-zA-Z][a-zA-Z0-9_]*$'
+  LambdaS3Bucket:
+    Type: String
+    Default: cornchat
+    Description: Name of S3 bucket where Lambda source files are stored
+  LambdaS3Folder:
+    Type: String
+    Default: private/cloudformation/TestCornChat/lambda
+    Description: Path to folder within LambdaS3Bucket where Lambda source files are stored
+  PublicConfigS3Bucket:
+    Type: String
+    Default: cornchat
+    Description: S3 bucket name for the PublicConfigS3Folder
+  PublicConfigS3Folder:
+    Type: String
+    Default: public/TestCornChat/public-config
+    Description: Path within PublicConfigS3Bucket to use for storing public information about the provisioned stack such as identity pool ID and GraphQL API endpoint.
 
 Outputs:
   IdentityPool:
@@ -55,7 +71,6 @@ Resources:
       - DynamoDBTableMsgInfo
     Properties:
       Description: Managed policy to allow AWS AppSync data source to access the tables created by this template.
-      Path: /appsync/
       PolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -228,10 +243,15 @@ Resources:
 
   GraphQLApi:
     Type: "AWS::AppSync::GraphQLApi"
+    DependsOn:
+      - CloudWatchLogsRole
     Description: "The GraphQL API for the CornChat App"
     Properties:
       AuthenticationType: "AWS_IAM"
       Name: !Sub ${AppName}API
+      LogConfig:
+        CloudWatchLogsRoleArn: !GetAtt CloudWatchLogsRole.Arn
+        FieldLogLevel: ALL
 
   MsgInfoDataSource:
     Type: "AWS::AppSync::DataSource"
@@ -248,6 +268,45 @@ Resources:
         TableName: !Ref DynamoDBTableMsgInfo
         AwsRegion: !Sub ${AWS::Region}
 
+  CloudWatchLogsRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${AppName}-CloudWatchLogs
+      ManagedPolicyArns:
+        - Ref: CloudWatchLogsPolicy
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - sts:AssumeRole
+            Principal:
+              Service:
+                - appsync.amazonaws.com
+
+  CloudWatchLogsPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: Managed policy to allow AWS GraphQL API to write to CloudWatch logs.
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - logs:CreateLogGroup
+              - logs:CreateLogStream
+              - logs:DescribeLogStreams
+              - logs:FilterLogEvents
+              - logs:PutLogEvents
+            Resource: "*"
+            # !Join
+            #   - ''
+            #   - - "arn:aws:logs:"
+            #     - !Ref AWS::Region
+            #     - ':'
+            #     - !Ref AWS::AccountId
+            #     - ":*"
+            #     # "arn:aws:logs:us-east-1:452684070979:*"
 
 ############# GRAPHQL #############
 
@@ -270,15 +329,15 @@ Resources:
       DataSourceName: !GetAtt MsgInfoDataSource.Name
 <% cat ./graphql/resolvers/getMsgInfo.yaml | sed 's/^/      /' %>
 
-  GetMsgInfosResolver:
+  ListMsgInfosResolver:
     Type: "AWS::AppSync::Resolver"
     DependsOn: GraphQLSchema
     Properties:
       ApiId: !GetAtt GraphQLApi.ApiId
       TypeName: Query
-      FieldName: getMsgInfos
+      FieldName: listMsgInfos
       DataSourceName: !GetAtt MsgInfoDataSource.Name
-<% cat ./graphql/resolvers/getMsgInfos.yaml | sed 's/^/      /' %>
+<% cat ./graphql/resolvers/listMsgInfos.yaml | sed 's/^/      /' %>
 
   AddTagResolver:
     Type: "AWS::AppSync::Resolver"
@@ -306,14 +365,18 @@ Resources:
   GenerateTokenLambda:
     Type: "AWS::Lambda::Function"
     DependsOn:
+      - DynamoDBTableApiTokens
       - GenerateTokenRole
       - GenerateTokenPolicy
     Properties:
       FunctionName: !Sub ${AppName}-GenerateTokenLambda
       Description: Allow users to generate a CornChat API token by providing a valid HipChat User ID and HipChat OAuth token
       Code:
-        S3Bucket: "cornchat-private"
-        S3Key: !Sub "cloudformation/${AppName}-stack/lambda/GenerateToken.zip"
+        S3Bucket: !Sub ${LambdaS3Bucket}
+        S3Key: !Sub ${LambdaS3Folder}/GenerateToken.zip
+      Environment:
+        Variables:
+          CORNCHAT_TABLE_API_TOKENS: !Ref DynamoDBTableApiTokens
       Role: !GetAtt GenerateTokenRole.Arn
       Timeout: 10
       Handler: "index.handler"
@@ -326,7 +389,6 @@ Resources:
       - DynamoDBTableApiTokens
     Properties:
       Description: Specifies which resources the "GenerateToken" lambda function can access.
-      Path: /appsync/
       PolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -336,8 +398,7 @@ Resources:
               - dynamodb:UpdateItem
             Resource: !GetAtt DynamoDBTableApiTokens.Arn
           - Effect: Allow
-            Sid: ""
-            Resource: "*"
+            Resource: "arn:aws:logs:::*"
             Action:
               - "logs:*"
 
@@ -362,14 +423,21 @@ Resources:
   LoginLambda:
     Type: "AWS::Lambda::Function"
     DependsOn:
+      - DynamoDBTableApiTokens
+      - IdentityPool
       - LoginLambdaRole
       - LoginLambdaPolicy
     Properties:
       FunctionName: !Sub ${AppName}-LoginLambda
       Description: Allow users to login with a CornChat API Token and get a federated Cognito session token.
       Code:
-        S3Bucket: "cornchat-private"
-        S3Key: !Sub "cloudformation/${AppName}-stack/lambda/Login.zip"
+        S3Bucket: !Sub ${LambdaS3Bucket}
+        S3Key: !Sub ${LambdaS3Folder}/Login.zip
+      Environment:
+        Variables:
+          CORNCHAT_IDENTITY_POOL_ID: !Ref IdentityPool
+          CORNCHAT_TABLE_API_TOKENS: !Ref DynamoDBTableApiTokens
+          CORNCHAT_IDENTITY_POOL_DEVELOPER_PROVIDER_NAME: !Sub login.${AppName}
       Role: !GetAtt LoginLambdaRole.Arn
       Timeout: 10
       Handler: "index.handler"
@@ -402,8 +470,7 @@ Resources:
                 - ":identitypool/"
                 - !Ref IdentityPool
           - Effect: Allow
-            Sid: ""
-            Resource: "*"
+            Resource: "arn:aws:logs:::*"
             Action:
               - "logs:*"
 
@@ -424,3 +491,75 @@ Resources:
             Principal:
               Service:
                 - lambda.amazonaws.com
+
+  WritePublicConfigLambda:
+    Type: "AWS::Lambda::Function"
+    DependsOn:
+      - GraphQLApi
+      - IdentityPool
+      - WritePublicConfigLambdaRole
+      - WritePublicConfigLambdaPolicy
+    Properties:
+      FunctionName: !Sub ${AppName}-WritePublicConfigLambda
+      Description: Publish a config.json file to a publicly accessible S3 bucket folder containing publicly allowed information about the stack, such as Identity Pool ID and GraphQL API endpoint URL.
+      Code:
+        S3Bucket: !Sub ${LambdaS3Bucket}
+        S3Key: !Sub ${LambdaS3Folder}/WritePublicConfig.zip
+      Environment:
+        Variables:
+          CORNCHAT_IDENTITY_POOL_ID: !Ref IdentityPool
+          CORNCHAT_GRAPHQL_ENDPOINT_URL: !GetAtt GraphQLApi.GraphQLUrl
+          CORNCHAT_IDENTITY_POOL_DEVELOPER_PROVIDER_NAME: !Sub login.${AppName}
+          PublicConfigS3Bucket: !Sub ${PublicConfigS3Bucket}
+          PublicConfigS3Folder: !Sub ${PublicConfigS3Folder}
+      Role: !GetAtt WritePublicConfigLambdaRole.Arn
+      Timeout: 10
+      Handler: "index.handler"
+      Runtime: "nodejs6.10"
+      MemorySize: 128
+
+  WritePublicConfigLambdaPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: Specifies which resources the "WritePublicConfigLambda" lambda function can access.
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - s3:PutObject
+              - s3:GetObject
+              - s3:PutObjectAcl
+            Resource: !Sub "arn:aws:s3:::${PublicConfigS3Bucket}/${PublicConfigS3Folder}/*"
+          - Effect: Allow
+            Resource: "arn:aws:logs:*:*:*"
+            Action:
+              - "logs:CreateLogGroup"
+              - "logs:CreateLogStream"
+              - "logs:PutLogEvents"
+
+  WritePublicConfigLambdaRole:
+    Type: AWS::IAM::Role
+    DependsOn:
+      - WritePublicConfigLambdaPolicy
+    Properties:
+      RoleName: !Sub ${AppName}-WritePublicConfig
+      ManagedPolicyArns:
+        - Ref: WritePublicConfigLambdaPolicy
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - sts:AssumeRole
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+
+  # Run the lambda automatically when the stack deploys
+  WritePublicConfigCustomResource:
+    Type: "Custom::LambdaCallout"
+    DependsOn:
+      - WritePublicConfigLambda
+    Properties:
+      ServiceToken: !GetAtt WritePublicConfigLambda.Arn

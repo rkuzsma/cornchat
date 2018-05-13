@@ -5,7 +5,8 @@ RequestMappingTemplate: |
       $util.qr($map.put("mid", $util.dynamodb.toString($mid)))
       $util.qr($mids.add($map))
   #end
-  ##$util.appendError("debug logging: midsMap=", $util.toJson($mids))
+  ## uncomment for debug logging:
+  ## $util.appendError("debug logging: midsMap=", $util.toJson($mids))
 
   {
       "version" : "2018-05-29",
@@ -18,4 +19,4 @@ RequestMappingTemplate: |
       }
   }
 ResponseMappingTemplate: |
-  $util.toJson($ctx.result.data.<% printf $APP_NAME%>_MsgInfo)
+  $util.toJson({"items": $ctx.result.data.<% printf $APP_NAME%>_MsgInfo})
