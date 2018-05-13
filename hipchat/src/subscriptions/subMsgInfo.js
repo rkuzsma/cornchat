@@ -1,11 +1,14 @@
 import gql from 'graphql-tag'
 
 export default gql`
-  query getMsgInfos($mids: [ID!]) {
-    getMsgInfos(mids: $mids) {
+  subscription subMsgInfo {
+    changedMsgInfo {
       mid
       tags {
         name
+      }
+      reactions {
+        emoji
       }
     }
   }

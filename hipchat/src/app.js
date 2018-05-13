@@ -110,12 +110,13 @@ class App extends React.Component {
   }
 
   refreshAppSyncClient() {
+    log("AWSAppSyncClient refreshing");
     CornChatUser.withAuthenticatedUser((err, authUser) => {
       if (err) {
         log("AWSAppSyncClient refresh failed, authentication error: " + err);
+        return;
       }
       try {
-        log("AWSAppSyncClient refreshing");
         var client = new AWSAppSyncClient({
           disableOffline: false,
           url: CORNCHAT_GRAPHQL_ENDPOINT_URL,

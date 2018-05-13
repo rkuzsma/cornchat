@@ -37,7 +37,7 @@ class CornChatUser {
 
   onApiTokenChanged(prev, current) {
     this.listeners.forEach((listener) => {
-      if (listener.onTagsChanged) {
+      if (listener.onApiTokenChanged) {
         listener.onApiTokenChanged(prev, current);
       }
     });
