@@ -71,13 +71,11 @@ class ApiToken {
 
   // Clear your Cognito Creds, ensuring that the next AWS call will be unauthenticated.
   static _resetCognitoCreds() {
-    if (AWS.config.credentials && AWS.config.credentials.params) {
+    if (AWS.config.credentials?.params) {
       log("ApiToken: IdentityPoolId: " + AWS.config.credentials.params.IdentityPoolId);
       log("ApiToken: IdentityId: " + AWS.config.credentials.params.IdentityId);
     }
-    if (!(AWS.config.credentials &&
-        AWS.config.credentials.params &&
-        AWS.config.credentials.params.IdentityPoolId)) {
+    if (AWS.config.credentials?.params?.IdentityPoolId !== CORNCHAT_IDENTITY_POOL_ID) {
       log("ApiToken: Resetting AWS Cognito Credentials");
       var anonymousCognitoCreds = new AWS.CognitoIdentityCredentials({
         IdentityPoolId: CORNCHAT_IDENTITY_POOL_ID,

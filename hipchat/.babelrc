@@ -1,7 +1,8 @@
 {
-  "presets": ["env", "es2015", "stage-3", "react"],
+  "presets": ["@babel/env", "@babel/react"],
   "plugins": ["react-hot-loader/babel",
-    "dynamic-import-webpack",
-    "transform-runtime",
-    "transform-strict-mode"]
+    "@babel/plugin-proposal-optional-chaining",
+    "@babel/plugin-transform-runtime",
+    "@babel/plugin-transform-strict-mode",
+  ]
 }
