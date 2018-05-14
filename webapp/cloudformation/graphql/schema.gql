@@ -1,7 +1,7 @@
 type MsgInfo {
   mid: ID!
   tags: [Tag]
-  reactions: [Reaction]
+  reactions: [String]
 }
 
 type MsgInfoList {
@@ -11,16 +11,12 @@ type MsgInfoList {
 type Mutation {
   addTag(mid: ID!, room: String!, name: String!): MsgInfo
   addReaction(mid: ID!, room: String!, emoji: String!): MsgInfo
+  removeReaction(mid: ID!, room: String!, emoji: String!): MsgInfo
 }
 
 type Query {
   getMsgInfo(mid: ID!): MsgInfo
   listMsgInfos(mids: [ID!]): MsgInfoList
-}
-
-type Reaction {
-  emoji: String!
-  userId: String!
 }
 
 type Subscription {

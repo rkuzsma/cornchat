@@ -7,10 +7,7 @@ export default gql`
       tags {
         name
       }
-      reactions {
-        emoji
-        userId
-      }
+      reactions
     }
   }
 `

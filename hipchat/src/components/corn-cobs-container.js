@@ -11,14 +11,41 @@ import { compose } from 'react-apollo';
 import ListMsgInfosQuery from '../queries/listMsgInfos';
 import SubMsgInfo from '../subscriptions/subMsgInfo';
 import AddTagMutation from '../mutations/addTag';
+import AddReactionMutation from '../mutations/addReaction';
+import RemoveReactionMutation from '../mutations/removeReaction';
 
 class CornCobsContainer extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      roomId: ''
+      roomId: '',
+      hipchatUserId: ''
     }
     this.handleAddTag = this.handleAddTag.bind(this);
+    this.handleToggleReaction = this.handleToggleReaction.bind(this);
+  }
+
+  handleToggleReaction(reaction, msgId) {
+    const reactionData = {
+      mid: msgId,
+      room: this.state.roomId,
+      emoji: reaction.emoji
+    }
+    const existingReaction = this.props.msgInfos.reactionsByMid[msgId];
+    if (existingReaction &&
+      existingReaction[reaction.emoji] &&
+      existingReaction[reaction.emoji].distinctUsers[this.state.hipchatUserId]) {
+        return this.props.mutateRemoveReaction({
+          variables: {...reactionData},
+          refetchQueries: [ { query: ListMsgInfosQuery }]
+        });
+    }
+    else {
+      return this.props.mutateAddReaction({
+        variables: {...reactionData},
+        refetchQueries: [ { query: ListMsgInfosQuery }]
+      });
+    }
   }
 
   handleAddTag(tag, msgId) {
@@ -27,7 +54,7 @@ class CornCobsContainer extends React.Component {
       room: this.state.roomId,
       name: tag.name
     }
-    return this.props.mutate({
+    return this.props.mutateAddTag({
       variables: {...tagData},
       refetchQueries: [ { query: ListMsgInfosQuery }]
       // Overkill for this app, but if desired, we could
@@ -47,7 +74,8 @@ class CornCobsContainer extends React.Component {
 
   componentDidMount() {
     this.setState({
-      roomId: HipchatWindow.roomId()
+      roomId: HipchatWindow.roomId(),
+      hipchatUserId: HipchatWindow.userId()
     });
   }
 
@@ -85,6 +113,7 @@ class CornCobsContainer extends React.Component {
         reactions={reactions}
         msgElements={this.props.msgElements}
         onFilterByTag={this.props.onFilterByTag}
+        onToggleReaction={this.handleToggleReaction}
         onAddTag={this.handleAddTag}
         recentTagNames={recentTagNames}
         roomId={this.state.roomId} />
@@ -139,16 +168,20 @@ const mapResultsToProps = ({ data, ownProps }) => {
         }
         tags[midItem.mid] = Object.values(distinctTags);
 
-        // filter out duplicate reactions from the same user
+        // Compute totals of emoji reactions provided by each user.
         const distinctReactions = {};
-        if (midItem.reactions) {
-          midItem.reactions.forEach(reaction => {
-            if (!distinctReactions[reaction.emoji]) {
-              distinctReactions[reaction.emoji] = {};
-            }
-            distinctReactions[reaction.emoji][reaction.userId] = reaction.emoji;
-          });
-        }
+        midItem.reactions?.forEach(reaction => {
+          // See: resolvers/addReaction.yaml
+          const [ emoji, userId ] = reaction.split("--")
+          const distinctReaction = distinctReactions[emoji] || {
+            distinctUsers: {},
+            count: 0
+          };
+          distinctReaction.distinctUsers[userId] = 1;
+          distinctReaction.count =
+            Object.keys(distinctReaction.distinctUsers).length;
+          distinctReactions[emoji] = distinctReaction;
+        });
         reactions[midItem.mid] = distinctReactions;
       }
     });
@@ -165,7 +198,9 @@ const getMids = function(msgElements) {
 
 // Populate this.props.data with GraphQL data
 export default compose(
-  graphql(AddTagMutation),
+  graphql(AddTagMutation, { name: 'mutateAddTag' }),
+  graphql(AddReactionMutation, { name: 'mutateAddReaction' }),
+  graphql(RemoveReactionMutation, { name: 'mutateRemoveReaction' }),
   graphql(ListMsgInfosQuery, {
     // Specify input variables to the query:
     options: (ownProps) => ({

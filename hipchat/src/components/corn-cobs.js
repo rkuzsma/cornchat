@@ -20,6 +20,7 @@ class CornCobs extends React.Component {
           tags={this.props.tags[item.msgId]}
           reactions={this.props.reactions[item.msgId]}
           onFilterByTag={this.props.onFilterByTag}
+          onToggleReaction={this.props.onToggleReaction}
           onAddTag={this.props.onAddTag}
           msgId={item.msgId}
           msgEl={item.msgEl}

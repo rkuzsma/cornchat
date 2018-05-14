@@ -1,39 +1,51 @@
 RequestMappingTemplate: |
-  ## Ideally, we want a map of userId and reactions, so user cannot vote twice.
-  ## But you cannot "SET reactions.UserId=somereaction" if reactions map doesn't yet exist.
-  ## So we record every reaction -- even duplicate reactions -- and rely on clients to
-  ## strip duplicates.
-  #if($ctx.identity && $ctx.identity.username)
-    #set($userId = $ctx.identity.username)
+  ## Store a set of userIds and reactions, so the same user cannot vote twice.
+  ## DynamoDB's "ADD" expression supports updating items in a String Set ("SS").
+  ## We store a unique string key, "$emoji--$userId", in the String Set for each reaction.
+
+  ## Getting the UserID from the $ctx is not obvious.
+  ## To print out the $ctxt, use:
+  ##   $util.appendError("debug logging: identity=", $util.toJson($ctx.identity))
+  ## ctx.identity.username is a string like:
+  ##   "AROAJDRBRQGQDBJLHR7SQ:CognitoIdentityCredentials
+  ## Although it uniquely identifies the user, we cannot get that value from the browser.
+  ## ctx.identity.cognitoIdentityAuthProvider is a string like:
+  ##   "\"login.TestCornChat\",\"login.TestCornChat:us-east-1:6d0fee58-2da9-4256-8a45-7bd6764f4505:506041\""
+  ## The "506041" at the end of the provider is what we want: the HipChat User ID.
+  ## Our Login lambda provides that to Cognito as the IDENTITY_POOL_DEVELOPER_PROVIDER_NAME.
+
+  #if($ctx.identity && $ctx.identity.cognitoIdentityAuthProvider)
+    #set($userId = $ctx.identity.cognitoIdentityAuthProvider)
   #else
-      #set($userId = "CORNCHAT_ADMIN")
+    #set($userId = "CORNCHAT_ADMIN")
   #end
+  #set($lastColonPos = $userId.lastIndexOf(':'))
+  #if($lastColonPos > 0)
+    #set($lastColonPos = $lastColonPos + 1)
+    #set($userId = $userId.substring($lastColonPos))
+    ## Trim the two trailing \" characters
+    #set($lenMinus1 = $userId.length())
+    #set($lenMinus1 = $lenMinus1 - 1)
+    #set($userId = $userId.substring(0, $lenMinus1))
+  #end
+
+  #set($emoji = $ctx.args.emoji)
+  #set($emojiUserPair = "${emoji}--${userId}")
   {
       "version" : "2017-02-28",
       "operation" : "UpdateItem",
       "update": {
-      	"expression": "SET reactions = list_append(if_not_exists(reactions, :empty_list), :new_reactions), room = :room",
+      	"expression": "ADD reactions :new_reaction",
           "expressionValues": {
-            ":new_reactions": {
-              "L": [
-                {
-                  "M": {
-                    "emoji": $util.dynamodb.toDynamoDBJson($ctx.args.emoji),
-                    "userId": $util.dynamodb.toDynamoDBJson($userId)
-                  }
-                }
-              ]
-            },
-            ":empty_list": {
-              "L": [
-              ]
-            },
-            ":room": $util.dynamodb.toDynamoDBJson($ctx.args.room)
+            ":new_reaction": {
+              "SS": [ $util.toJson($emojiUserPair) ]
+            }
           }
       },
       "key" : {
           "mid": $util.dynamodb.toDynamoDBJson($ctx.args.mid)
       }
   }
+
 ResponseMappingTemplate: |
   $util.toJson($ctx.result)

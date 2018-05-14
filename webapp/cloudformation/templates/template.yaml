@@ -359,6 +359,16 @@ Resources:
       DataSourceName: !GetAtt MsgInfoDataSource.Name
 <% cat ./graphql/resolvers/addReaction.yaml | sed 's/^/      /' %>
 
+  RemoveReactionResolver:
+    Type: "AWS::AppSync::Resolver"
+    DependsOn: GraphQLSchema
+    Properties:
+      ApiId: !GetAtt GraphQLApi.ApiId
+      TypeName: Mutation
+      FieldName: removeReaction
+      DataSourceName: !GetAtt MsgInfoDataSource.Name
+<% cat ./graphql/resolvers/removeReaction.yaml | sed 's/^/      /' %>
+
 
 ############# LAMBDAS #############
 

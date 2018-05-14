@@ -8,6 +8,12 @@ body {
     font-size: 14px;
     font-family: Helvetica Neue, Helvetica, Arial, sans-serif;
 }
+.CORN-reaction {
+  cursor: pointer;
+  display: inline-block;
+  margin-right: 4px;
+  position: relative;
+}
 .CORN-tag {
   font-size: 80%;
   color: #000000;

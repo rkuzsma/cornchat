@@ -1,0 +1,36 @@
+RequestMappingTemplate: |
+
+  #if($ctx.identity && $ctx.identity.cognitoIdentityAuthProvider)
+    #set($userId = $ctx.identity.cognitoIdentityAuthProvider)
+  #else
+    #set($userId = "CORNCHAT_ADMIN")
+  #end
+  #set($lastColonPos = $userId.lastIndexOf(':'))
+  #if($lastColonPos > 0)
+    #set($lastColonPos = $lastColonPos + 1)
+    #set($userId = $userId.substring($lastColonPos))
+    ## Trim the two trailing \" characters
+    #set($lenMinus1 = $userId.length())
+    #set($lenMinus1 = $lenMinus1 - 1)
+    #set($userId = $userId.substring(0, $lenMinus1))
+  #end
+
+  #set($emoji = $ctx.args.emoji)
+  #set($emojiUserPair = "${emoji}--${userId}")
+  {
+      "version" : "2017-02-28",
+      "operation" : "UpdateItem",
+      "update": {
+      	"expression": "DELETE reactions :existing_reaction",
+          "expressionValues": {
+            ":existing_reaction": {
+              "SS": [ $util.toJson($emojiUserPair) ]
+            }
+          }
+      },
+      "key" : {
+          "mid": $util.dynamodb.toDynamoDBJson($ctx.args.mid)
+      }
+  }
+ResponseMappingTemplate: |
+  $util.toJson($ctx.result)

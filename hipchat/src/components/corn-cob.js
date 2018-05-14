@@ -12,6 +12,7 @@ class CornCob extends React.Component {
   constructor(props) {
     super(props);
     this.handleAddTag = this.handleAddTag.bind(this);
+    this.handleToggleReaction = this.handleToggleReaction.bind(this);
     this.state = {
       isSavingTags: false
     };
@@ -23,6 +24,10 @@ class CornCob extends React.Component {
 
   handleThumbsUp() {
     this.props.onThumbsUp(this.props.msgId);
+  }
+
+  handleToggleReaction(reaction) {
+    this.props.onToggleReaction(reaction, this.props.msgId);
   }
 
   handleAddTag(tag) {
@@ -46,7 +51,7 @@ class CornCob extends React.Component {
           <Tags msgEl={this.props.msgEl} tags={this.props.tags} onFilterByTag={this.props.onFilterByTag} />
         </TagsPortal>
         <ReactionsPortal msgEl={this.props.msgEl}>
-          <Reactions msgEl={this.props.msgEl} reactions={this.props.reactions} />
+          <Reactions msgEl={this.props.msgEl} reactions={this.props.reactions} onToggleReaction={this.handleToggleReaction} />
         </ReactionsPortal>
       </div>
     );
@@ -57,6 +62,7 @@ CornCob.propTypes = {
   tags: PropTypes.array,
   reactions: PropTypes.object,
   onFilterByTag: PropTypes.func.isRequired,
+  onToggleReaction: PropTypes.func.isRequired,
   msgId: PropTypes.string.isRequired,
   msgEl: PropTypes.object.isRequired,
   onAddTag: PropTypes.func.isRequired,

@@ -118,7 +118,8 @@ class App extends React.Component {
       }
       try {
         var client = new AWSAppSyncClient({
-          disableOffline: false,
+          // We can support offline later...
+          disableOffline: true,
           url: CORNCHAT_GRAPHQL_ENDPOINT_URL,
           region: CORNCHAT_AWS_REGION,
           auth: {

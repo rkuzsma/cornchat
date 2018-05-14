@@ -1,6 +1,7 @@
 import log from '../logger';
 import PropTypes from 'prop-types';
 import React from 'react';
+import Reaction from './reaction';
 
 class Reactions extends React.Component {
   constructor(props) {
@@ -10,26 +11,25 @@ class Reactions extends React.Component {
   render() {
     if (!this.props.reactions) return null;
 
-    return (<span className='CORN-reactions'>
-        {JSON.stringify(this.props.reactions)}
-      </span>
+    const reactionItems = Object.keys(this.props.reactions).map(emoji =>
+      <Reaction
+        emoji={emoji}
+        count={this.props.reactions[emoji].count}
+        onToggleReaction={this.props.onToggleReaction}
+        key={emoji} />
     );
-
-    // const reactionItems = this.props.reactions.map((reaction) =>
-    //   <Reaction
-    //     reaction={reaction}
-    //     key={reaction.emoji} />
-    // );
-    // return (
-    //   <span className='CORN-reactions'>
-    //     {reactionItems}
-    //   </span>
-    // )
+    
+    return (
+      <span className='CORN-reactions'>
+        {reactionItems}
+      </span>
+    )
   }
 }
 
 Reactions.propTypes = {
-  reactions: PropTypes.object
+  reactions: PropTypes.object,
+  onToggleReaction: PropTypes.func.isRequired
 };
 
 export default Reactions;
