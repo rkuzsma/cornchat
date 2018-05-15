@@ -1,0 +1,10 @@
+patch-package
+--- a/node_modules/aws-appsync/lib/link/auth-link.js
++++ b/node_modules/aws-appsync/lib/link/auth-link.js
+@@ -199,5 +199,5 @@ var formatAsRequest = function (_a, options) {
+         variables: variables,
+         query: printer_1.print(query)
+     };
+-    return __assign({ body: JSON.stringify(body), method: 'POST' }, options, { headers: __assign({ accept: '*/*', 'content-type': 'application/json; charset=utf-8' }, options.headers) });
++    return __assign({ body: JSON.stringify(body), method: 'POST' }, options, { headers: __assign({ accept: '*/*', 'content-type': 'application/json; charset=UTF-8' }, options.headers) });
+ };
