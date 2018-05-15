@@ -21,6 +21,7 @@ const devConfig = {
       cert: fs.readFileSync(__dirname + "/dev-certs/cert.pem")
     }
   },
+  devtool: 'inline-source-map',  // turn off eval() statements so we can map source easier in the debugger
   output: {
     filename: 'bundle.js',
     path: path.resolve(__dirname, 'dist')

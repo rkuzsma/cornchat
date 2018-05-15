@@ -25,7 +25,6 @@ import AWSAppSyncClient from "aws-appsync";
 import { Rehydrated } from 'aws-appsync-react';
 import { ApolloProvider } from 'react-apollo';
 
-
 // The app's main run loop. App-Loader invokes the loop iteratively.
 class App extends React.Component {
   constructor(props) {

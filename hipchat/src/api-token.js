@@ -52,7 +52,7 @@ class ApiToken {
           log("ApiToken: Invalid API Token");
           return fn("Invalid API Token", null);
         }
-        log("ApiToken: Authenticated user. IdentityId: " + output.identityId + ", token: " + output.token.substring(0, 8) + "...");
+        log("ApiToken: Authenticated user. IdentityId: " + output.identityId + ", token: " + output.token.substring(output.token.length - 10) + "...");
         var creds = AWS.config.credentials;
         creds.params.IdentityId = output.identityId;
         creds.params.Logins = {

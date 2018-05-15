@@ -53,7 +53,7 @@ function getCognitoToken(hipchatUserId, optionalExistingIdentityId, fn) {
 		});
 }
 
-exports.handler = function(event, context) {
+exports.handler = function(event, context, callback) {
 	var apiToken = event.apiToken;
 
 	getHipchatUserIdFromApiToken(apiToken, function(err, hipchatUserId) {

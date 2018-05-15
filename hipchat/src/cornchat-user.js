@@ -125,7 +125,7 @@ class CornChatUser {
         var output = JSON.parse(data.Payload);
         if (output.created) {
           log("CornChatUser: Generated token");
-          CornChatUser.setApiToken(output.apiToken);
+          this.setApiToken(output.apiToken);
           return fn(null, output.apiToken);
         }
       }

@@ -87,7 +87,7 @@ function validateHipchatIdentity(hipchatUserId, hipchatOauthAccessToken, fn) {
 	req.end();
 }
 
-exports.handler = function(event, context) {
+exports.handler = function(event, context, callback) {
 	var hipchatUserId = event.hipchatUserId;
 	var hipchatOauthAccessToken = event.hipchatOauthAccessToken;
 

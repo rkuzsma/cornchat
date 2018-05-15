@@ -88,12 +88,13 @@ class CornCobsContainer extends React.Component {
   }
 
   render() {
-    if (this.props.data?.error) {
-      log("CornCobsContainer: Error in graphql data: " + this.props.data.error);
+
+    if (this.props.error) {
+      log("CornCobsContainer: Error in graphql data: " + JSON.stringify(this.props.error));
       return null;
     }
 
-    if (this.props.data?.loading) {
+    if (this.props.loading) {
       log("CornCobsContainer: Loading data, not rendering yet.");
       return null;
     }
