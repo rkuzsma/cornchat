@@ -1,20 +1,15 @@
 import log from '../logger';
 import React from "react";
 import PropTypes from 'prop-types';
-import MsgElementsStore from '../msg-elements-store';
 
 class TagFilter extends React.Component {
   constructor(props) {
     super(props);
-    this.msgElementStore = new MsgElementsStore();
   }
 
   filterByTag(tagName) {
-    this.msgElementStore.recentElements().map((item) => {
-      // TODO Hook back up tag-filter, but using GraphQL instead of msgInfoStore:
-      //const tags = this.msgInfoStore.recentTags()[item.msgId];
-      log("TODO: FilterByTag needs re-implementation");
-      const tags = null;
+    this.props.msgElements.map((item) => {
+      const tags = this.props.tags[item.msgId];
       if (!(tags && tags.some(e => e.name === tagName))) {
         $(item.msgEl).hide();
 
@@ -37,7 +32,7 @@ class TagFilter extends React.Component {
   }
 
   clearFilterByTag() {
-    this.msgElementStore.recentElements().map((item) => {
+    this.props.msgElements.map((item) => {
       $(item.msgEl).show();
       // And show the parent container, in case it was also .hide()ed
       $(item.msgEl).closest('div.hc-chat-row').show();
@@ -58,7 +53,9 @@ class TagFilter extends React.Component {
 }
 
 TagFilter.propTypes = {
-  tag: PropTypes.object
+  tag: PropTypes.object,
+  tags: PropTypes.object,
+  msgElements: PropTypes.object
 };
 
 export default TagFilter;

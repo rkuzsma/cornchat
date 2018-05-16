@@ -5,7 +5,6 @@ import Logo from './components/logo';
 import SettingsDialog from './components/settings-dialog';
 import MsgElementsContainer from './components/msg-elements-container';
 import CornCobsContainer from './components/corn-cobs-container';
-import TagFilter from './components/tag-filter';
 import CornChatUser from './cornchat-user';
 import React from "react";
 import ReactDOM from "react-dom";
@@ -32,14 +31,12 @@ class App extends React.Component {
     super(props);
     this.state = {
       isShowSettings: false,
-      tagFilter: null,
       apiToken: '',
       client: null,
       isFirstTime: true
     };
     this.toggleSettingsDialog = this.toggleSettingsDialog.bind(this);
     this.onSettingsChanged = this.onSettingsChanged.bind(this);
-    this.handleFilterByTag = this.handleFilterByTag.bind(this);
     this.refreshAppSyncClient = this.refreshAppSyncClient.bind(this);
     this.handleApiTokenChanged = this.handleApiTokenChanged.bind(this);
     this.cornChatUserListener = {
@@ -97,10 +94,9 @@ class App extends React.Component {
           <ApolloProvider client={this.state.client}>
             <Rehydrated>
               <div>
-                <TagFilter tag={this.state.tagFilter} />
                 <RoomIdContainer>
                   <MsgElementsContainer>
-                    <CornCobsContainer onFilterByTag={this.handleFilterByTag} />
+                    <CornCobsContainer />
                   </MsgElementsContainer>
                 </RoomIdContainer>
               </div>
@@ -154,9 +150,7 @@ class App extends React.Component {
     CornChatUser.setApiToken(apiToken);
   }
 
-  handleFilterByTag(tag) {
-    this.setState({ tagFilter: this.state.tagFilter === tag ? null : tag });
-  }
+
 }
 
 export default hot(module)(App);

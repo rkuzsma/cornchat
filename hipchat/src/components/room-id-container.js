@@ -4,7 +4,9 @@ import HipchatWindow from '../hipchat-window';
 class RoomIdContainer extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {};
+    this.state = {
+      roomId: null
+    };
   }
 
   componentDidMount() {

@@ -30,7 +30,7 @@ class MsgElementsContainer extends React.Component {
     const childrenWithExtraProp = React.Children.map(this.props.children, child => {
       return React.cloneElement(child, {
         msgElements: this.state.msgElements,
-        roomId: this.props.roomId
+        ...this.props
       });
     });
 

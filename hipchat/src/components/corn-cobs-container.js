@@ -5,6 +5,7 @@ import PropTypes from 'prop-types';
 import MsgElementsStore from '../msg-elements-store';
 import CornCobs from './corn-cobs';
 import HipchatWindow from '../hipchat-window';
+import TagFilter from '../components/tag-filter';
 
 import { graphql } from 'react-apollo';
 import { compose } from 'react-apollo';
@@ -18,10 +19,16 @@ class CornCobsContainer extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      hipchatUserId: ''
+      hipchatUserId: '',
+      tagFilter: null
     }
-    this.handleAddTag = this.handleAddTag.bind(this);
+    this.handleFilterByTag = this.handleFilterByTag.bind(this);
     this.handleToggleReaction = this.handleToggleReaction.bind(this);
+    this.handleAddTag = this.handleAddTag.bind(this);
+  }
+
+  handleFilterByTag(tag) {
+    this.setState({ tagFilter: this.state.tagFilter === tag ? null : tag });
   }
 
   handleToggleReaction(reaction, msgId) {
@@ -127,21 +134,23 @@ class CornCobsContainer extends React.Component {
     }
 
     return (
-      <CornCobs
-        tags={tags}
-        reactions={reactions}
-        msgElements={this.props.msgElements}
-        onFilterByTag={this.props.onFilterByTag}
-        onToggleReaction={this.handleToggleReaction}
-        onAddTag={this.handleAddTag}
-        recentTagNames={recentTagNames}
-        roomId={this.props.roomId} />
+      <div>
+        <CornCobs
+          tags={tags}
+          reactions={reactions}
+          msgElements={this.props.msgElements}
+          onFilterByTag={this.handleFilterByTag}
+          onToggleReaction={this.handleToggleReaction}
+          onAddTag={this.handleAddTag}
+          recentTagNames={recentTagNames}
+          roomId={this.props.roomId} />
+        <TagFilter tag={this.state.tagFilter} tags={tags} msgElements={this.props.msgElements} />
+      </div>
     );
   }
 }
 
 CornCobsContainer.propTypes = {
-  onFilterByTag: PropTypes.func.isRequired,
   msgElements: PropTypes.array.isRequired,
   roomId: PropTypes.string
 };
