@@ -1,5 +1,6 @@
 import log from '../logger';
 import MsgElementsStore from '../msg-elements-store';
+import PropTypes from 'prop-types';
 
 class MsgElementsContainer extends React.Component {
   constructor(props) {
@@ -28,12 +29,17 @@ class MsgElementsContainer extends React.Component {
   render() {
     const childrenWithExtraProp = React.Children.map(this.props.children, child => {
       return React.cloneElement(child, {
-        msgElements: this.state.msgElements
+        msgElements: this.state.msgElements,
+        roomId: this.props.roomId
       });
     });
 
     return childrenWithExtraProp;
   }
 }
+
+MsgElementsContainer.propTypes = {
+  roomId: PropTypes.string
+};
 
 export default MsgElementsContainer;

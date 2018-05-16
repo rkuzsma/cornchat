@@ -18,7 +18,6 @@ class CornCobsContainer extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      roomId: '',
       hipchatUserId: ''
     }
     this.handleAddTag = this.handleAddTag.bind(this);
@@ -28,7 +27,7 @@ class CornCobsContainer extends React.Component {
   handleToggleReaction(reaction, msgId) {
     const reactionData = {
       mid: msgId,
-      room: this.state.roomId,
+      room: this.props.roomId,
       emoji: reaction.emoji
     }
     const existingReaction = this.props.msgInfos.reactionsByMid[msgId];
@@ -37,13 +36,23 @@ class CornCobsContainer extends React.Component {
       existingReaction[reaction.emoji].distinctUsers[this.state.hipchatUserId]) {
         return this.props.mutateRemoveReaction({
           variables: {...reactionData},
-          refetchQueries: [ { query: ListMsgInfosQuery }]
+          refetchQueries: [ {
+             query: ListMsgInfosQuery,
+             variables: {
+               mids: [msgId]
+             }
+          } ]
         });
     }
     else {
       return this.props.mutateAddReaction({
         variables: {...reactionData},
-        refetchQueries: [ { query: ListMsgInfosQuery }]
+        refetchQueries: [ {
+           query: ListMsgInfosQuery,
+           variables: {
+             mids: [msgId]
+           }
+        } ]
       });
     }
   }
@@ -51,12 +60,18 @@ class CornCobsContainer extends React.Component {
   handleAddTag(tag, msgId) {
     const tagData = {
       mid: msgId,
-      room: this.state.roomId,
+      room: this.props.roomId,
       name: tag.name
     }
+    log("handleAddTag: " + JSON.stringify(tagData));
     return this.props.mutateAddTag({
       variables: {...tagData},
-      refetchQueries: [ { query: ListMsgInfosQuery }]
+      refetchQueries: [ {
+         query: ListMsgInfosQuery,
+         variables: {
+           mids: [msgId]
+         }
+      } ]
       // Overkill for this app, but if desired, we could
       // update the client state without re-querying:
       // optimisticResponse: {
@@ -74,7 +89,6 @@ class CornCobsContainer extends React.Component {
 
   componentDidMount() {
     this.setState({
-      roomId: HipchatWindow.roomId(),
       hipchatUserId: HipchatWindow.userId()
     });
   }
@@ -99,6 +113,10 @@ class CornCobsContainer extends React.Component {
       return null;
     }
 
+    if (!this.props.roomId) {
+      return null;
+    }
+
     let tags = {};
     let recentTagNames = [];
     let reactions = {};
@@ -117,14 +135,15 @@ class CornCobsContainer extends React.Component {
         onToggleReaction={this.handleToggleReaction}
         onAddTag={this.handleAddTag}
         recentTagNames={recentTagNames}
-        roomId={this.state.roomId} />
+        roomId={this.props.roomId} />
     );
   }
 }
 
 CornCobsContainer.propTypes = {
   onFilterByTag: PropTypes.func.isRequired,
-  msgElements: PropTypes.array.isRequired
+  msgElements: PropTypes.array.isRequired,
+  roomId: PropTypes.string
 };
 
 
@@ -194,7 +213,11 @@ const mapResultsToProps = ({ data, ownProps }) => {
 }
 
 const getMids = function(msgElements) {
-  return msgElements.map((item) => item.msgId)
+  let mids = [''];
+  if (msgElements && msgElements.length > 0) {
+    mids = msgElements.map((item) => item.msgId);
+  }
+  return mids;
 }
 
 // Populate this.props.data with GraphQL data

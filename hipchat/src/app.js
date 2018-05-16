@@ -12,6 +12,7 @@ import ReactDOM from "react-dom";
 import ApiToken from './api-token';
 import { hot } from 'react-hot-loader';
 import MsgElementAutoScroller from './components/msg-element-auto-scroller';
+import RoomIdContainer from './components/room-id-container';
 
 // Importing `isomorphic-unfetch` due to `apollo-link-http` raising
 // a warning of not having `fetch` globally available.
@@ -97,9 +98,11 @@ class App extends React.Component {
             <Rehydrated>
               <div>
                 <TagFilter tag={this.state.tagFilter} />
-                <MsgElementsContainer>
-                  <CornCobsContainer onFilterByTag={this.handleFilterByTag} />
-                </MsgElementsContainer>
+                <RoomIdContainer>
+                  <MsgElementsContainer>
+                    <CornCobsContainer onFilterByTag={this.handleFilterByTag} />
+                  </MsgElementsContainer>
+                </RoomIdContainer>
               </div>
             </Rehydrated>
           </ApolloProvider>
