@@ -144,7 +144,11 @@ class CornCobsContainer extends React.Component {
           onAddTag={this.handleAddTag}
           recentTagNames={recentTagNames}
           roomId={this.props.roomId} />
-        <TagFilter tag={this.state.tagFilter} tags={tags} msgElements={this.props.msgElements} />
+        <TagFilter tag={this.state.tagFilter}
+          tags={tags}
+          msgElements={this.props.msgElements}
+          onFilterByTag={this.handleFilterByTag}
+        />
       </div>
     );
   }

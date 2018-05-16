@@ -13,11 +13,12 @@ class Reaction extends React.Component {
   }
 
   render() {
-    const count = this.props.count > 1 ? `+${this.props.count}` : '';
+    const count = this.props.count;
+    const title = this.props.isMyReaction ? "Withdraw your Reaction" : "Echo this Reaction"
     return (
-      <div className='CORN-reaction' onClick={this.handleToggleReaction}>
+      <div className='CORN-reaction' onClick={this.handleToggleReaction} title={title}>
         <Emoji emoji={this.props.emoji} set='emojione' size={16} />
-        {count}
+        <span className='CORN-reaction-count'>{count}</span>
       </div>
     );
   }
@@ -26,7 +27,8 @@ class Reaction extends React.Component {
 Reaction.propTypes = {
   emoji: PropTypes.string.isRequired,
   count: PropTypes.number.isRequired,
-  onToggleReaction: PropTypes.func.isRequired
+  onToggleReaction: PropTypes.func.isRequired,
+  isMyReaction: PropTypes.bool
 };
 
 export default Reaction;

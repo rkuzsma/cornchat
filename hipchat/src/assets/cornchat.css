@@ -11,8 +11,17 @@ body {
 .CORN-reaction {
   cursor: pointer;
   display: inline-block;
-  margin-right: 4px;
+  margin-top: 2px;
+  margin-left: 2px;
+  margin-right: 2px;
+  padding-right: 2px;
   position: relative;
+  border: 1px solid #c7dee5;
+  border-radius: 4px;
+  height: 20px;
+}
+.CORN-reaction-count {
+  font-size: 80%
 }
 .CORN-tag {
   font-size: 80%;
@@ -43,8 +52,9 @@ body {
 .CORN-addTag {
   border-radius:4px 4px 4px 4px;
   border:solid 1px #000;
-  padding:5px;
-  font-size: 50%;
+  padding:2px;
+  margin-right: 2px;
+  font-size: 80%;
   cursor: pointer;
 }
 .CORN-addTagDialog {
@@ -63,13 +73,18 @@ body {
   width: 200px;
 }
 
-
+.CORN-tagFilter {
+  margin-left: 10px;
+  margin-top: 5px;
+  display: inline-block;
+}
 .CORN-logo {
   cursor: pointer;
   margin-left: 10px;
   margin-top: 5px;
   width: 128px;
   height: 32px;
+  display: inline-block;
 }
 .CORN-logo img {
   vertical-align: middle;

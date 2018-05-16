@@ -2,6 +2,7 @@ import log from '../logger';
 import PropTypes from 'prop-types';
 import React from 'react';
 import Reaction from './reaction';
+import HipchatWindow from '../hipchat-window';
 
 class Reactions extends React.Component {
   constructor(props) {
@@ -11,14 +12,18 @@ class Reactions extends React.Component {
   render() {
     if (!this.props.reactions) return null;
 
-    const reactionItems = Object.keys(this.props.reactions).map(emoji =>
-      <Reaction
-        emoji={emoji}
-        count={this.props.reactions[emoji].count}
-        onToggleReaction={this.props.onToggleReaction}
-        key={emoji} />
-    );
-    
+    const reactionItems = Object.keys(this.props.reactions).map(emoji => {
+      const reaction = this.props.reactions[emoji];
+      return (
+        <Reaction
+          emoji={emoji}
+          count={reaction.count}
+          onToggleReaction={this.props.onToggleReaction}
+          isMyReaction={!!reaction.distinctUsers[HipchatWindow.userId()]}
+          key={emoji} />
+      )
+    });
+
     return (
       <span className='CORN-reactions'>
         {reactionItems}

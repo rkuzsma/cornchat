@@ -21,7 +21,7 @@ type Query {
 
 type Subscription {
   changedMsgInfo: MsgInfo
-    @aws_subscribe(mutations: ["addTag","addReaction"])
+    @aws_subscribe(mutations: ["addTag","addReaction","removeReaction"])
 }
 
 type Tag {

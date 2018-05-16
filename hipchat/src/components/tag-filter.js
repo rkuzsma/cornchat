@@ -1,10 +1,17 @@
 import log from '../logger';
 import React from "react";
 import PropTypes from 'prop-types';
+import LogoPortal from './logo-portal';
+import Tag from './tag';
 
 class TagFilter extends React.Component {
   constructor(props) {
     super(props);
+    this.handleClearFilter = this.handleClearFilter.bind(this);
+  }
+
+  handleClearFilter() {
+    this.props.onFilterByTag(null);
   }
 
   filterByTag(tagName) {
@@ -48,14 +55,26 @@ class TagFilter extends React.Component {
       this.clearFilterByTag();
     }
 
-    return null;
+    if (!this.props.tag) {
+      return null;
+    }
+
+    return (
+      <LogoPortal>
+        <div className="CORN-tagFilter">
+          <span>Showing new and <Tag tag={this.props.tag} key='__filtering' onFilterByTag={this.handleClearFilter} /> messages &nbsp;&nbsp;&nbsp;</span>
+          <button className="CORN-button" onClick={this.handleClearFilter} >Show All</button>
+        </div>
+      </LogoPortal>
+    )
   }
 }
 
 TagFilter.propTypes = {
   tag: PropTypes.object,
   tags: PropTypes.object,
-  msgElements: PropTypes.object
+  msgElements: PropTypes.object,
+  onFilterByTag: PropTypes.func
 };
 
 export default TagFilter;
