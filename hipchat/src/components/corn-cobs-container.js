@@ -1,34 +1,25 @@
 import log from '../logger';
-import ReactDOM from "react-dom";
-import Constants from '../constants';
+import React from 'react'
+import ReactDOM from 'react-dom'
 import PropTypes from 'prop-types';
-import MsgElementsStore from '../msg-elements-store';
 import CornCobs from './corn-cobs';
-import HipchatWindow from '../hipchat-window';
-import TagFilter from '../components/tag-filter';
 
 import { graphql } from 'react-apollo';
 import { compose } from 'react-apollo';
-import ListMsgInfosQuery from '../queries/listMsgInfos';
-import SubMsgInfo from '../subscriptions/subMsgInfo';
+
 import AddTagMutation from '../mutations/addTag';
 import AddReactionMutation from '../mutations/addReaction';
 import RemoveReactionMutation from '../mutations/removeReaction';
 
 class CornCobsContainer extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      hipchatUserId: '',
-      tagFilter: null
-    }
-    this.handleFilterByTag = this.handleFilterByTag.bind(this);
-    this.handleToggleReaction = this.handleToggleReaction.bind(this);
-    this.handleAddTag = this.handleAddTag.bind(this);
+  static propTypes = {
+    roomId: PropTypes.string.isRequired
   }
 
-  handleFilterByTag(tag) {
-    this.setState({ tagFilter: this.state.tagFilter === tag ? null : tag });
+  constructor(props) {
+    super(props);
+    this.handleToggleReaction = this.handleToggleReaction.bind(this);
+    this.handleAddTag = this.handleAddTag.bind(this);
   }
 
   handleToggleReaction(reaction, msgId) {
@@ -37,29 +28,28 @@ class CornCobsContainer extends React.Component {
       room: this.props.roomId,
       emoji: reaction.emoji
     }
-    const existingReaction = this.props.msgInfos.reactionsByMid[msgId];
-    if (existingReaction &&
-      existingReaction[reaction.emoji] &&
-      existingReaction[reaction.emoji].distinctUsers[this.state.hipchatUserId]) {
-        return this.props.mutateRemoveReaction({
-          variables: {...reactionData},
-          refetchQueries: [ {
-             query: ListMsgInfosQuery,
-             variables: {
-               mids: [msgId]
-             }
-          } ]
-        });
+    if (reaction.isMyReaction) {
+      return this.props.mutateRemoveReaction({
+        variables: {...reactionData},
+        // Not required, because we have a subscription:
+        // refetchQueries: [ {
+        //    query: ListMsgInfosQuery,
+        //    variables: {
+        //      mids: [msgId]
+        //    }
+        // } ]
+      });
     }
     else {
       return this.props.mutateAddReaction({
         variables: {...reactionData},
-        refetchQueries: [ {
-           query: ListMsgInfosQuery,
-           variables: {
-             mids: [msgId]
-           }
-        } ]
+        // Not required, because we have a subscription:
+        // refetchQueries: [ {
+        //    query: ListMsgInfosQuery,
+        //    variables: {
+        //      mids: [msgId]
+        //    }
+        // } ]
       });
     }
   }
@@ -94,183 +84,18 @@ class CornCobsContainer extends React.Component {
     });
   }
 
-  componentDidMount() {
-    this.setState({
-      hipchatUserId: HipchatWindow.userId()
-    });
-  }
-
-  componentWillMount() {
-    this.unsubscribe = this.props.subscribeToNewMsgInfo();
-  }
-
-  componentWillUnmount() {
-    this.unsubscribe();
-  }
-
   render() {
-
-    if (this.props.error) {
-      log("CornCobsContainer: Error in graphql data: " + JSON.stringify(this.props.error));
-      return null;
+    const myProps = {
+      onAddTag: this.handleAddTag,
+      onToggleReaction: this.handleToggleReaction
     }
-
-    if (this.props.loading) {
-      log("CornCobsContainer: Loading data, not rendering yet.");
-      return null;
-    }
-
-    if (!this.props.roomId) {
-      return null;
-    }
-
-    let tags = {};
-    let recentTagNames = [];
-    let reactions = {};
-    if (this.props.msgInfos) {
-      tags = this.props.msgInfos.tagsByMid;
-      recentTagNames = this.props.msgInfos.recentTagNames;
-      reactions = this.props.msgInfos.reactionsByMid;
-    }
-
-    return (
-      <div>
-        <CornCobs
-          tags={tags}
-          reactions={reactions}
-          msgElements={this.props.msgElements}
-          onFilterByTag={this.handleFilterByTag}
-          onToggleReaction={this.handleToggleReaction}
-          onAddTag={this.handleAddTag}
-          recentTagNames={recentTagNames}
-          roomId={this.props.roomId} />
-        <TagFilter tag={this.state.tagFilter}
-          tags={tags}
-          msgElements={this.props.msgElements}
-          onFilterByTag={this.handleFilterByTag}
-        />
-      </div>
-    );
+    return this.props.renderProp(myProps);
   }
-}
-
-CornCobsContainer.propTypes = {
-  msgElements: PropTypes.array.isRequired,
-  roomId: PropTypes.string
-};
-
-
-// Clean up the graphql data we get back into a more usable structure for CornCobs.
-// Returns de-duped tags fetched from graphql, keyed off the msginfo mid, e.g.:
-// Given props.data: {
-//   listMsgInfos: {
-//     items: [
-//       null,
-//       null,
-//       {mid: "699a1266-c937-44d8-bf54-2fa40c59005c", tags: [{name: "Red"},{name: "Blue"}] },
-//       {mid: "deadbeef-c937-44d8-bf54-bf54bf54bf54", tags: [{name: "Green"},{name: "Green"}] }
-//     ]
-//   }
-// }
-// Return:
-// {
-//  tagsByMid: {"699a1266-c937-44d8-bf54-2fa40c59005c": [{name: "Red"},{name: "Blue"}],
-//              "deadbeef-c937-44d8-bf54-bf54bf54bf54": [{name: "Green"}] },
-//  recentTagNames: ["Red", "Blue", "Green"]
-// }
-const mapResultsToProps = ({ data, ownProps }) => {
-  let result = {
-    tagsByMid: {},
-    recentTagNames: [],
-    reactionsByMid: {}
-  }
-  let tags = {};
-  let reactions = {};
-  let allDistinctTags = {};
-  if (data && !data.loading && data.listMsgInfos) {
-    data.listMsgInfos.items.forEach((midItem) => {
-      if (midItem && midItem.mid) {
-
-        // filter out duplicate tags
-        const distinctTags = {};
-        if (midItem.tags) {
-          midItem.tags.forEach(tag => {
-            distinctTags[tag.name] = tag;
-            allDistinctTags[tag.name] = tag;
-          });
-        }
-        tags[midItem.mid] = Object.values(distinctTags);
-
-        // Compute totals of emoji reactions provided by each user.
-        const distinctReactions = {};
-        midItem.reactions?.forEach(reaction => {
-          // See: resolvers/addReaction.yaml
-          const [ emoji, userId ] = reaction.split("--")
-          const distinctReaction = distinctReactions[emoji] || {
-            distinctUsers: {},
-            count: 0
-          };
-          distinctReaction.distinctUsers[userId] = 1;
-          distinctReaction.count =
-            Object.keys(distinctReaction.distinctUsers).length;
-          distinctReactions[emoji] = distinctReaction;
-        });
-        reactions[midItem.mid] = distinctReactions;
-      }
-    });
-    result.tagsByMid = tags,
-    result.recentTagNames = Object.keys(allDistinctTags)
-    result.reactionsByMid = reactions;
-  }
-  return result;
-}
-
-const getMids = function(msgElements) {
-  let mids = [''];
-  if (msgElements && msgElements.length > 0) {
-    mids = msgElements.map((item) => item.msgId);
-  }
-  return mids;
 }
 
 // Populate this.props.data with GraphQL data
 export default compose(
   graphql(AddTagMutation, { name: 'mutateAddTag' }),
   graphql(AddReactionMutation, { name: 'mutateAddReaction' }),
-  graphql(RemoveReactionMutation, { name: 'mutateRemoveReaction' }),
-  graphql(ListMsgInfosQuery, {
-    // Specify input variables to the query:
-    options: (ownProps) => ({
-      fetchPolicy: 'cache-and-network',
-      variables: {
-        mids: getMids(ownProps.msgElements)
-      }
-    }),
-    // Handle the response from GraphQL for ListMsgInfosQuery:
-    props: (resultProps) => {
-      return {
-        loading: resultProps.data.loading,
-        error: resultProps.data.error,
-        // Convert GraphQL response to a nicer looking data structure:
-        msgInfos: mapResultsToProps(resultProps),
-        // Expose a subscription function to listen for updates:
-        subscribeToNewMsgInfo: (params) => {
-          resultProps.data.subscribeToMore({
-            document: SubMsgInfo,
-            updateQuery: (prev, current) => {
-              let { subscriptionData: { data : { changedMsgInfo } } } = current;
-              return {
-                ...prev,
-                listMsgInfos: {
-                  __typename: 'MsgInfoList',
-                  // Add the changed item into the items array
-                  items: [changedMsgInfo, ...prev.listMsgInfos.items.filter(item => item?.mid !== changedMsgInfo.mid)]
-                }
-              }
-            }
-          });
-        }
-      }
-    }
-  })
+  graphql(RemoveReactionMutation, { name: 'mutateRemoveReaction' })
 )(CornCobsContainer);

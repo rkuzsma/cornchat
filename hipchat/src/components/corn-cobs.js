@@ -7,6 +7,17 @@ import Constants from '../constants';
 import PropTypes from 'prop-types';
 
 class CornCobs extends React.Component {
+  static propTypes = {
+    msgElements: PropTypes.array.isRequired,
+    onToggleFilterByTag: PropTypes.func.isRequired,
+    onToggleReaction: PropTypes.func.isRequired,
+    onAddTag: PropTypes.func.isRequired,
+    tagsByMid: PropTypes.object.isRequired,
+    recentTagNames: PropTypes.array.isRequired,
+    reactionsByMid: PropTypes.object.isRequired,
+    roomId: PropTypes.string.isRequired
+  }
+
   constructor(props) {
     super(props);
   }
@@ -17,9 +28,9 @@ class CornCobs extends React.Component {
     const cobs = this.props.msgElements.map((item) =>
       <CornCobPortal msgEl={item.msgEl} key={item.msgId} >
         <CornCob
-          tags={this.props.tags[item.msgId]}
-          reactions={this.props.reactions[item.msgId]}
-          onFilterByTag={this.props.onFilterByTag}
+          tags={this.props.tagsByMid[item.msgId]}
+          reactions={this.props.reactionsByMid[item.msgId]}
+          onToggleFilterByTag={this.props.onToggleFilterByTag}
           onToggleReaction={this.props.onToggleReaction}
           onAddTag={this.props.onAddTag}
           msgId={item.msgId}
@@ -31,17 +42,5 @@ class CornCobs extends React.Component {
     return cobs;
   }
 }
-
-CornCobs.propTypes = {
-  tags: PropTypes.object.isRequired,
-  thumbs: PropTypes.object.isRequired,
-  msgElements: PropTypes.object.isRequired,
-  onFilterByTag: PropTypes.func.isRequired,
-  onThumbsUp: PropTypes.func.isRequired,
-  onAddTag: PropTypes.func.isRequired,
-  recentTagNames: PropTypes.array,
-  reactions: PropTypes.object.isRequired,
-  roomId: PropTypes.string.isRequired
-};
 
 export default CornCobs;

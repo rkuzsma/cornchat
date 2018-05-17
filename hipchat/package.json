@@ -10,16 +10,15 @@
     "trust-dev-certs": "security add-trusted-cert -e hostnameMismatch -r trustRoot -k ~/Library/Keychains/login.keychain dev-certs/cert.pem",
     "build": "webpack --config webpack.prod.js",
     "deploy": "gh-pages -d dist",
-
     "//": "Patch aws-appsync to fix https://github.com/awslabs/aws-mobile-appsync-sdk-js/issues/128 :",
     "prepare": "patch-package"
-
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "@babel/core": "^7.0.0-beta.46",
+    "@babel/plugin-proposal-class-properties": "^7.0.0-beta.47",
     "@babel/plugin-proposal-optional-chaining": "^7.0.0-beta.46",
     "@babel/plugin-syntax-optional-chaining": "^7.0.0-beta.46",
     "@babel/plugin-transform-runtime": "^7.0.0-beta.46",

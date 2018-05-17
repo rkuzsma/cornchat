@@ -2,9 +2,13 @@ import log from '../logger';
 import PropTypes from 'prop-types';
 import React from 'react';
 import Reaction from './reaction';
-import HipchatWindow from '../hipchat-window';
 
 class Reactions extends React.Component {
+  static propTypes = {
+    reactions: PropTypes.object,
+    onToggleReaction: PropTypes.func.isRequired
+  }
+
   constructor(props) {
     super(props);
   }
@@ -16,10 +20,8 @@ class Reactions extends React.Component {
       const reaction = this.props.reactions[emoji];
       return (
         <Reaction
-          emoji={emoji}
-          count={reaction.count}
+          reaction={reaction}
           onToggleReaction={this.props.onToggleReaction}
-          isMyReaction={!!reaction.distinctUsers[HipchatWindow.userId()]}
           key={emoji} />
       )
     });
@@ -31,10 +33,5 @@ class Reactions extends React.Component {
     )
   }
 }
-
-Reactions.propTypes = {
-  reactions: PropTypes.object,
-  onToggleReaction: PropTypes.func.isRequired
-};
 
 export default Reactions;

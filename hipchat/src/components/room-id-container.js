@@ -1,7 +1,12 @@
 import log from '../logger';
 import HipchatWindow from '../hipchat-window';
+import PropTypes from 'prop-types';
 
 class RoomIdContainer extends React.Component {
+  static propTypes = {
+    renderProp: PropTypes.func.isRequired
+  }
+
   constructor(props) {
     super(props);
     this.state = {
@@ -42,13 +47,7 @@ class RoomIdContainer extends React.Component {
       return null;
     }
 
-    const childrenWithExtraProp = React.Children.map(this.props.children, child => {
-      return React.cloneElement(child, {
-        roomId: this.state.roomId
-      });
-    });
-
-    return childrenWithExtraProp;
+    return this.props.renderProp({ roomId: this.state.roomId });
   }
 }
 

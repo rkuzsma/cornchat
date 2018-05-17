@@ -9,6 +9,18 @@ import React from 'react';
 import AddReactionContainer from './add-reaction-container';
 
 class CornCob extends React.Component {
+  static propTypes = {
+    tags: PropTypes.array,
+    reactions: PropTypes.object,
+    onToggleFilterByTag: PropTypes.func.isRequired,
+    onToggleReaction: PropTypes.func.isRequired,
+    msgId: PropTypes.string.isRequired,
+    msgEl: PropTypes.object.isRequired,
+    onAddTag: PropTypes.func.isRequired,
+    recentTagNames: PropTypes.array,
+    roomId: PropTypes.string.isRequired
+  }
+
   constructor(props) {
     super(props);
     this.handleAddTag = this.handleAddTag.bind(this);
@@ -36,7 +48,6 @@ class CornCob extends React.Component {
   }
 
   render() {
-
     const addTagButton = this.state.isSavingTags ? (
       <span className="saving"><span>.</span><span>.</span><span>.</span></span>
     ) : (
@@ -48,7 +59,7 @@ class CornCob extends React.Component {
         <AddReactionContainer msgId={this.props.msgId} roomId={this.props.roomId} />
         {addTagButton}
         <TagsPortal msgEl={this.props.msgEl}>
-          <Tags msgEl={this.props.msgEl} tags={this.props.tags} onFilterByTag={this.props.onFilterByTag} />
+          <Tags msgEl={this.props.msgEl} tags={this.props.tags} onClickTag={this.props.onToggleFilterByTag} />
         </TagsPortal>
         <ReactionsPortal msgEl={this.props.msgEl}>
           <Reactions msgEl={this.props.msgEl} reactions={this.props.reactions} onToggleReaction={this.handleToggleReaction} />
@@ -57,17 +68,5 @@ class CornCob extends React.Component {
     );
   }
 }
-
-CornCob.propTypes = {
-  tags: PropTypes.array,
-  reactions: PropTypes.object,
-  onFilterByTag: PropTypes.func.isRequired,
-  onToggleReaction: PropTypes.func.isRequired,
-  msgId: PropTypes.string.isRequired,
-  msgEl: PropTypes.object.isRequired,
-  onAddTag: PropTypes.func.isRequired,
-  recentTagNames: PropTypes.array,
-  roomId: PropTypes.string.isRequired
-};
 
 export default CornCob;

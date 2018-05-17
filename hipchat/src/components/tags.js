@@ -4,6 +4,11 @@ import Tag from './tag';
 import React from 'react';
 
 class Tags extends React.Component {
+  static propTypes = {
+    tags: PropTypes.array,
+    onClickTag: PropTypes.func.isRequired
+  }
+  
   constructor(props) {
     super(props);
   }
@@ -14,7 +19,7 @@ class Tags extends React.Component {
       <Tag
         tag={tag}
         key={tag.name}
-        onFilterByTag={this.props.onFilterByTag} />
+        onClickTag={this.props.onClickTag} />
     );
     return (
       <span className='CORN-tags'>
@@ -23,10 +28,5 @@ class Tags extends React.Component {
     )
   }
 }
-
-Tags.propTypes = {
-  tags: PropTypes.array,
-  onFilterByTag: PropTypes.func.isRequired
-};
 
 export default Tags;

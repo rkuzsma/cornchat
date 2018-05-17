@@ -4,6 +4,7 @@ import LogoPortal from './components/logo-portal';
 import Logo from './components/logo';
 import SettingsDialog from './components/settings-dialog';
 import MsgElementsContainer from './components/msg-elements-container';
+import MsgInfosContainer from './components/msg-infos-container';
 import CornCobsContainer from './components/corn-cobs-container';
 import CornChatUser from './cornchat-user';
 import React from "react";
@@ -11,7 +12,11 @@ import ReactDOM from "react-dom";
 import ApiToken from './api-token';
 import { hot } from 'react-hot-loader';
 import MsgElementAutoScroller from './components/msg-element-auto-scroller';
+import HipchatUserIdContainer from './components/hipchat-user-id-container';
 import RoomIdContainer from './components/room-id-container';
+import TagFilterContainer from './components/tag-filter-container';
+import TagFilter from './components/tag-filter';
+import CornCobs from './components/corn-cobs';
 
 // Importing `isomorphic-unfetch` due to `apollo-link-http` raising
 // a warning of not having `fetch` globally available.
@@ -94,11 +99,51 @@ class App extends React.Component {
           <ApolloProvider client={this.state.client}>
             <Rehydrated>
               <div>
-                <RoomIdContainer>
-                  <MsgElementsContainer>
-                    <CornCobsContainer />
-                  </MsgElementsContainer>
-                </RoomIdContainer>
+                <HipchatUserIdContainer
+                  renderProp={({ hipchatUserId }) => (
+                  <RoomIdContainer
+                    renderProp={({ roomId }) => (
+                      <MsgElementsContainer
+                        renderProp={({ msgElements }) => (
+                          <MsgInfosContainer
+                            msgElements={msgElements}
+                            hipchatUserId={hipchatUserId}
+                            renderProp={({ msgInfos }) => (
+                              <TagFilterContainer
+                                msgElements={msgElements}
+                                tags={msgInfos.tagsByMid}
+                                renderProp={({ onToggleFilterByTag, onClearTagFilter, currentlyFilteredTag }) => (
+                                  <div>
+                                    <TagFilter
+                                      onToggleFilterByTag={onToggleFilterByTag}
+                                      onClearTagFilter={onClearTagFilter}
+                                      currentlyFilteredTag={currentlyFilteredTag}
+                                    />
+                                    <CornCobsContainer
+                                      roomId={roomId}
+                                      renderProp={({ onToggleReaction, onAddTag }) => (
+                                        <CornCobs
+                                          msgElements={msgElements}
+                                          onToggleFilterByTag={onToggleFilterByTag}
+                                          onToggleReaction={onToggleReaction}
+                                          onAddTag={onAddTag}
+                                          tagsByMid={msgInfos.tagsByMid}
+                                          recentTagNames={msgInfos.recentTagNames}
+                                          reactionsByMid={msgInfos.reactionsByMid}
+                                          roomId={roomId} />
+                                      )}
+                                    ></CornCobsContainer>
+                                  </div>
+                                )}
+                              ></TagFilterContainer>
+                            )}
+                          ></MsgInfosContainer>
+                        )}
+                      ></MsgElementsContainer>
+                    )}
+                  ></RoomIdContainer>
+                )}
+                ></HipchatUserIdContainer>
               </div>
             </Rehydrated>
           </ApolloProvider>
