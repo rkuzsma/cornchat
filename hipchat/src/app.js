@@ -11,7 +11,7 @@ import React from "react";
 import ReactDOM from "react-dom";
 import ApiToken from './api-token';
 import { hot } from 'react-hot-loader';
-import MsgElementAutoScroller from './components/msg-element-auto-scroller';
+import ScrollHandler from './scroll-handler';
 import HipchatUserIdContainer from './components/hipchat-user-id-container';
 import RoomIdContainer from './components/room-id-container';
 import TagFilterContainer from './components/tag-filter-container';
@@ -47,12 +47,7 @@ class App extends React.Component {
     this.cornChatUserListener = {
       onApiTokenChanged: this.handleApiTokenChanged
     }
-
-  // TODO Move this to ComponentDidMount because React could error if trying to setState
-  // before a component is actually mounted:
-    // Activate the Msg Element Resizer watcher so it gets notified first whenever
-    // new msg elements are added to the chat room.
-    new MsgElementAutoScroller();
+    this.scrollHandler = new ScrollHandler;
   }
 
   componentDidMount() {
@@ -65,10 +60,12 @@ class App extends React.Component {
       this.handleApiTokenChanged(this.state.apiToken, CornChatUser.getApiToken());
     }
     this.setState({isFirstTime: false});
+    this.scrollHandler.attach();
   }
 
   componentWillUnmount() {
     CornChatUser.removeListener(this.cornChatUserListener);
+    this.scrollHandler.detach();
   }
 
   render() {
@@ -101,48 +98,48 @@ class App extends React.Component {
               <div>
                 <HipchatUserIdContainer
                   renderProp={({ hipchatUserId }) => (
-                  <RoomIdContainer
-                    renderProp={({ roomId }) => (
-                      <MsgElementsContainer
-                        renderProp={({ msgElements }) => (
-                          <MsgInfosContainer
-                            msgElements={msgElements}
-                            hipchatUserId={hipchatUserId}
-                            renderProp={({ msgInfos }) => (
-                              <TagFilterContainer
-                                msgElements={msgElements}
-                                tags={msgInfos.tagsByMid}
-                                renderProp={({ onToggleFilterByTag, onClearTagFilter, currentlyFilteredTag }) => (
-                                  <div>
-                                    <TagFilter
-                                      onToggleFilterByTag={onToggleFilterByTag}
-                                      onClearTagFilter={onClearTagFilter}
-                                      currentlyFilteredTag={currentlyFilteredTag}
-                                    />
-                                    <CornCobsContainer
-                                      roomId={roomId}
-                                      renderProp={({ onToggleReaction, onAddTag }) => (
-                                        <CornCobs
-                                          msgElements={msgElements}
-                                          onToggleFilterByTag={onToggleFilterByTag}
-                                          onToggleReaction={onToggleReaction}
-                                          onAddTag={onAddTag}
-                                          tagsByMid={msgInfos.tagsByMid}
-                                          recentTagNames={msgInfos.recentTagNames}
-                                          reactionsByMid={msgInfos.reactionsByMid}
-                                          roomId={roomId} />
-                                      )}
-                                    ></CornCobsContainer>
-                                  </div>
-                                )}
-                              ></TagFilterContainer>
-                            )}
-                          ></MsgInfosContainer>
-                        )}
-                      ></MsgElementsContainer>
-                    )}
-                  ></RoomIdContainer>
-                )}
+                    <RoomIdContainer
+                      renderProp={({ roomId }) => (
+                        <MsgElementsContainer
+                          renderProp={({ msgElements }) => (
+                            <MsgInfosContainer
+                              msgElements={msgElements}
+                              hipchatUserId={hipchatUserId}
+                              renderProp={({ msgInfos }) => (
+                                <TagFilterContainer
+                                  msgElements={msgElements}
+                                  tags={msgInfos.tagsByMid}
+                                  renderProp={({ onToggleFilterByTag, onClearTagFilter, currentlyFilteredTag }) => (
+                                    <div>
+                                      <TagFilter
+                                        onToggleFilterByTag={onToggleFilterByTag}
+                                        onClearTagFilter={onClearTagFilter}
+                                        currentlyFilteredTag={currentlyFilteredTag}
+                                      />
+                                      <CornCobsContainer
+                                        roomId={roomId}
+                                        renderProp={({ onToggleReaction, onAddTag }) => (
+                                          <CornCobs
+                                            msgElements={msgElements}
+                                            onToggleFilterByTag={onToggleFilterByTag}
+                                            onToggleReaction={onToggleReaction}
+                                            onAddTag={onAddTag}
+                                            tagsByMid={msgInfos.tagsByMid}
+                                            recentTagNames={msgInfos.recentTagNames}
+                                            reactionsByMid={msgInfos.reactionsByMid}
+                                            roomId={roomId} />
+                                        )}
+                                      ></CornCobsContainer>
+                                    </div>
+                                  )}
+                                ></TagFilterContainer>
+                              )}
+                            ></MsgInfosContainer>
+                          )}
+                        ></MsgElementsContainer>
+                      )}
+                    ></RoomIdContainer>
+                  )}
                 ></HipchatUserIdContainer>
               </div>
             </Rehydrated>
