@@ -66,6 +66,11 @@ class ScrollHandler {
     }
   }
 
+  getScrollBox() {
+    const box = $('div.hc-chat-scrollbox');
+    return box.length == 1 ? box[0] : null;
+  }
+
   reconnectScrollHandler() {
     const scrollBox = this.getScrollBox();
     if (!scrollBox) return;
@@ -96,11 +101,6 @@ class ScrollHandler {
 
     log("ScrollHandler: First time initializing this room; scrolling to bottom.");
     scrollBox.scrollTop = scrollBox.scrollHeight;
-  }
-
-  getScrollBox() {
-    const box = $('div.hc-chat-scrollbox');
-    return box.length == 1 ? box[0] : null;
   }
 
   scrollHandler() {

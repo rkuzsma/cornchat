@@ -1,4 +1,6 @@
 import './assets/cornchat.css';
+import './assets/highlightjs.9.12.0.min.css';
+
 import log from './logger';
 import LogoPortal from './components/logo-portal';
 import Logo from './components/logo';
@@ -17,6 +19,8 @@ import RoomIdContainer from './components/room-id-container';
 import TagFilterContainer from './components/tag-filter-container';
 import TagFilter from './components/tag-filter';
 import CornCobs from './components/corn-cobs';
+import MsgsDecorator from './components/msgs-decorator';
+import MarkdownDecorator from './components/markdown-decorator';
 
 // Importing `isomorphic-unfetch` due to `apollo-link-http` raising
 // a warning of not having `fetch` globally available.
@@ -102,39 +106,45 @@ class App extends React.Component {
                       renderProp={({ roomId }) => (
                         <MsgElementsContainer
                           renderProp={({ msgElements }) => (
-                            <MsgInfosContainer
-                              msgElements={msgElements}
-                              hipchatUserId={hipchatUserId}
-                              renderProp={({ msgInfos }) => (
-                                <TagFilterContainer
-                                  msgElements={msgElements}
-                                  tags={msgInfos.tagsByMid}
-                                  renderProp={({ onToggleFilterByTag, onClearTagFilter, currentlyFilteredTag }) => (
-                                    <div>
-                                      <TagFilter
-                                        onToggleFilterByTag={onToggleFilterByTag}
-                                        onClearTagFilter={onClearTagFilter}
-                                        currentlyFilteredTag={currentlyFilteredTag}
-                                      />
-                                      <CornCobsContainer
-                                        roomId={roomId}
-                                        renderProp={({ onToggleReaction, onAddTag }) => (
-                                          <CornCobs
-                                            msgElements={msgElements}
-                                            onToggleFilterByTag={onToggleFilterByTag}
-                                            onToggleReaction={onToggleReaction}
-                                            onAddTag={onAddTag}
-                                            tagsByMid={msgInfos.tagsByMid}
-                                            recentTagNames={msgInfos.recentTagNames}
-                                            reactionsByMid={msgInfos.reactionsByMid}
-                                            roomId={roomId} />
-                                        )}
-                                      ></CornCobsContainer>
-                                    </div>
-                                  )}
-                                ></TagFilterContainer>
-                              )}
-                            ></MsgInfosContainer>
+                            <div>
+                              <MsgsDecorator
+                                msgElements={msgElements}
+                                decorators={[MarkdownDecorator]}
+                              />
+                              <MsgInfosContainer
+                                msgElements={msgElements}
+                                hipchatUserId={hipchatUserId}
+                                renderProp={({ msgInfos }) => (
+                                  <TagFilterContainer
+                                    msgElements={msgElements}
+                                    tags={msgInfos.tagsByMid}
+                                    renderProp={({ onToggleFilterByTag, onClearTagFilter, currentlyFilteredTag }) => (
+                                      <div>
+                                        <TagFilter
+                                          onToggleFilterByTag={onToggleFilterByTag}
+                                          onClearTagFilter={onClearTagFilter}
+                                          currentlyFilteredTag={currentlyFilteredTag}
+                                        />
+                                        <CornCobsContainer
+                                          roomId={roomId}
+                                          renderProp={({ onToggleReaction, onAddTag }) => (
+                                            <CornCobs
+                                              msgElements={msgElements}
+                                              onToggleFilterByTag={onToggleFilterByTag}
+                                              onToggleReaction={onToggleReaction}
+                                              onAddTag={onAddTag}
+                                              tagsByMid={msgInfos.tagsByMid}
+                                              recentTagNames={msgInfos.recentTagNames}
+                                              reactionsByMid={msgInfos.reactionsByMid}
+                                              roomId={roomId} />
+                                          )}
+                                        ></CornCobsContainer>
+                                      </div>
+                                    )}
+                                  ></TagFilterContainer>
+                                )}
+                              ></MsgInfosContainer>
+                            </div>
                           )}
                         ></MsgElementsContainer>
                       )}
