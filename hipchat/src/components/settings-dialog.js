@@ -5,9 +5,16 @@ import Constants from '../constants';
 import Utils from '../utils';
 import PropTypes from 'prop-types';
 import ApiToken from '../api-token';
-import Msg from './msg';
+import FlashMsg from './flash-msg';
 
 class SettingsDialog extends React.Component {
+  static propTypes = {
+    onClose: PropTypes.func.isRequired,
+    onSettingsChanged: PropTypes.func.isRequired,
+    show: PropTypes.bool,
+    token: PropTypes.string.isRequired
+  }
+
   constructor(props) {
     super(props);
     this.state = {
@@ -113,9 +120,9 @@ class SettingsDialog extends React.Component {
             <span className="CORN-dialog-x" onClick={this.props.onClose}>x</span>
           </div>
           <hr/>
-          <Msg className="CORN-error" msg={this.state.errorMsg} />
-          <Msg className="CORN-success" msg={this.state.successMsg} />
-          <Msg className="CORN-info" msg={this.state.statusMsg} />
+          <FlashMsg className="CORN-error" msg={this.state.errorMsg} />
+          <FlashMsg className="CORN-success" msg={this.state.successMsg} />
+          <FlashMsg className="CORN-info" msg={this.state.statusMsg} />
           <form>
             <label>
               CornChat API Token:<br/>
@@ -133,12 +140,5 @@ class SettingsDialog extends React.Component {
     );
   }
 }
-
-SettingsDialog.propTypes = {
-  onClose: PropTypes.func.isRequired,
-  onSettingsChanged: PropTypes.func.isRequired,
-  show: PropTypes.bool,
-  token: PropTypes.string.isRequired
-};
 
 export default SettingsDialog;

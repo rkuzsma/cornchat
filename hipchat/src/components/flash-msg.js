@@ -1,7 +1,12 @@
 import React from "react";
 import PropTypes from 'prop-types';
 
-class Msg extends React.Component {
+class FlashMsg extends React.Component {
+  static propTypes = {
+    msg: PropTypes.string,
+    className: PropTypes.string
+  }
+
   constructor(props) {
     super(props);
   }
@@ -12,9 +17,4 @@ class Msg extends React.Component {
   }
 }
 
-Msg.propTypes = {
-  msg: PropTypes.string,
-  className: PropTypes.string
-};
-
-export default Msg;
+export default FlashMsg;
