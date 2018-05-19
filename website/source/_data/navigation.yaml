@@ -6,10 +6,6 @@
   },
   "main": [
     {
-      "text": "Home",
-      "type": "label"
-    },
-    {
       "text": "Getting Started",
       "type": "link",
       "path": "index.html#Getting-Started"
@@ -23,10 +19,6 @@
       "text": "Source Code",
       "type": "link",
       "path": "https://github.com/rkuzsma/cornchat"
-    },
-    {
-      "text": "Support and Feedback",
-      "type": "label"
     },
     {
       "text": "Raise an Issue on Github",

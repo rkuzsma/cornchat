@@ -7,6 +7,7 @@ To run the site locally:
 ```
 npm install -g hexo-cli
 cd <THIS DIRECTORY>
+npm install
 hexo s
 ```
 

@@ -3,15 +3,21 @@ title: CornChat - HipChat's Missing Features
 
 # CornChat
 
-Enhance your HipChat experience with threaded conversations, emoji reactions, Github-flavored markdown support, and more.
+_Enhance HipChat with the features you've always wanted._
+
+Tag individual messages, and use Github-Flavored Markdown:
+
+![CornChat Screenshot](images/screenshot-tag.png "Tag individual messages to make message threads")
 
 
-TODO: Picture of tagging threaded conversations
+Filter message threads by tag:
 
-TODO: Reactions pic
+![CornChat Screenshot](images/screenshot-filter.png "Filter message threads by tag")
 
-TODO: Markdown pic
 
+React to individual messages with emoji:
+
+![CornChat Screenshot](images/screenshot-emoji.png "React to individual messages with emoji")
 
 
 ## Getting Started
@@ -29,13 +35,15 @@ $ (todo: some cmd to inject the bundle)
 
 Login to your HipChat app and run this command to inject CornChat onto the page:
 
-```bash
-$ npm install -g hexo-cli
+```javascript
+var cornchat = document.createElement('script');
+cornchat.setAttribute('src','https://TODO_PROVIDE_FULL_PATH_TO_THE_BUNDLE/bundle.js');
+document.head.appendChild(cornchat);
 ```
 
 ### HipChat for Windows
 
-Coming soon!
+_Coming soon!_
 
 
 
@@ -53,4 +61,4 @@ Reactions and tags are stored on our AWS server. No guarantees for uptime or dat
 
 ## Cure Cancer
 
-Like CornChat? Hate Cancer? Please help my daughter Quinn and [donate 5 bucks to Alex’s Lemonade Stand](https://www.alexslemonade.org/donate). Don’t think too hard about it, just do it. It takes 2 minutes and the payment form is beautifully designed. You will feel great doing it.
+Like CornChat? Hate Cancer? Please help my daughter Quinn and [donate 5 bucks to Alex’s Lemonade Stand](https://www.alexslemonade.org/donate). Don’t think too hard about it, just do it. It takes 2 minutes and the payment form is beautifully designed. You'll feel great doing it.
