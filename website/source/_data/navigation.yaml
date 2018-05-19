@@ -1,0 +1,37 @@
+{
+  "logo": {
+    "text": "CornChat",
+    "type": "link",
+    "path": "index.html"
+  },
+  "main": [
+    {
+      "text": "Home",
+      "type": "label"
+    },
+    {
+      "text": "Getting Started",
+      "type": "link",
+      "path": "index.html#Getting-Started"
+    },
+    {
+      "text": "How it Works",
+      "type": "link",
+      "path": "how-it-works.html"
+    },
+    {
+      "text": "Source Code",
+      "type": "link",
+      "path": "https://github.com/rkuzsma/cornchat"
+    },
+    {
+      "text": "Support and Feedback",
+      "type": "label"
+    },
+    {
+      "text": "Raise an Issue on Github",
+      "type": "link",
+      "path": "https://github.com/rkuzsma/cornchat/issues/new"
+    }
+  ]
+}
