@@ -118,11 +118,10 @@ class App extends React.Component {
                                   <TagFilterContainer
                                     msgElements={msgElements}
                                     tags={msgInfos.tagsByMid}
-                                    renderProp={({ onToggleFilterByTag, onClearTagFilter, currentlyFilteredTag }) => (
+                                    renderProp={({ onToggleFilterByTag, currentlyFilteredTag }) => (
                                       <div>
                                         <TagFilter
                                           onToggleFilterByTag={onToggleFilterByTag}
-                                          onClearTagFilter={onClearTagFilter}
                                           currentlyFilteredTag={currentlyFilteredTag}
                                         />
                                         <CornCobsContainer

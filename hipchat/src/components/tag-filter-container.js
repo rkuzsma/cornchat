@@ -16,18 +16,12 @@ class TagFilterContainer extends React.Component {
     this.state = {
       currentlyFilteredTag: null
     }
-
-    this.handleClearFilter = this.handleClearFilter.bind(this);
     this.handleToggleFilter = this.handleToggleFilter.bind(this);
   }
 
   handleToggleFilter(tag) {
     log("handleToggleFilter(" + JSON.stringify(tag) + ")")
-    this.setState({ currentlyFilteredTag: this.state.currentlyFilteredTag === tag ? null : tag });
-  }
-
-  handleClearFilter() {
-    this.setState({ tagFilter: null });
+    this.setState({ currentlyFilteredTag: this.state.currentlyFilteredTag?.name === tag.name ? null : tag });
   }
 
   domFilterByTag(tagName) {
@@ -42,12 +36,12 @@ class TagFilterContainer extends React.Component {
         const parentHcChatRow = $(item.msgEl).closest('div.hc-chat-row');
         // Inspect all child actionable-msg-containers to see if any have been .hide()ed
         const childMsgs = $(parentHcChatRow).find('div.actionable-msg-container');
-        log("childMsgsLen=" + childMsgs.length);
+        // log("childMsgsLen=" + childMsgs.length);
         if ($.makeArray($(childMsgs)).some((e) => $(e).is(":visible"))) {
-          log("Not OK to hide the parent");
+          // log("Not OK to hide the parent");
         }
         else {
-          log("OK to hide the parent");
+          // log("OK to hide the parent");
           $(parentHcChatRow).hide();
         }
       }
@@ -73,7 +67,6 @@ class TagFilterContainer extends React.Component {
 
     const myProps = {
       onToggleFilterByTag: this.handleToggleFilter,
-      onClearTagFilter: this.handleClearFilter,
       currentlyFilteredTag: this.state.currentlyFilteredTag
     }
 

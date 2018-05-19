@@ -80,6 +80,11 @@ class ScrollHandler {
       return;
     }
 
+    const hcMessagesDiv = $('div.hc-messages')[0];
+    if (!hcMessagesDiv) {
+      return;
+    }
+
     log("ScrollHandler: (re)Attaching scroll listener");
     scrollBox.onscroll = this.scrollHandler;
     this.scrollHandler();
@@ -90,11 +95,10 @@ class ScrollHandler {
     }
 
     log("ScrollHandler: Attaching Resize Sensor");
-    const element = $('div.hc-messages')[0];
-    this.scrollBoxResizeSensor = new ResizeSensor(element, () => {
-      var newHeight = element.offsetHeight;
-      var diff = newHeight - element.CORN_prevHeight;
-      element.CORN_prevHeight = newHeight;
+    this.scrollBoxResizeSensor = new ResizeSensor(hcMessagesDiv, () => {
+      var newHeight = hcMessagesDiv.offsetHeight;
+      var diff = newHeight - hcMessagesDiv.CORN_prevHeight;
+      hcMessagesDiv.CORN_prevHeight = newHeight;
       log("ScrollHandler: Scrollbox Resized");
       window.setTimeout(this.resizeHandler, 100);
     });

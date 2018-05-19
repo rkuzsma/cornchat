@@ -62,13 +62,13 @@ class CornCobsContainer extends React.Component {
     }
     log("handleAddTag: " + JSON.stringify(tagData));
     return this.props.mutateAddTag({
-      variables: {...tagData},
-      refetchQueries: [ {
-         query: ListMsgInfosQuery,
-         variables: {
-           mids: [msgId]
-         }
-      } ]
+      variables: {...tagData}
+      // refetchQueries: [ {
+      //    query: ListMsgInfosQuery,
+      //    variables: {
+      //      mids: [msgId]
+      //    }
+      // } ]
       // Overkill for this app, but if desired, we could
       // update the client state without re-querying:
       // optimisticResponse: {
