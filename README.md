@@ -29,27 +29,27 @@ npm run start:dev -- --hot
 ```
 
 CornChat bundle served from:
-https://localhost:8080/bundle.js
+https://localhost:8080/TestCornChat-bundle.js
 
-Quick test:
-https://localhost:8080/healthcheck.js
 
 Start HipChat. You'll get hot module replacement, too.
 
 To debug in the HipChat Web UI, load the HipChat web app and run this in the console:
 ```
 var cornchat = document.createElement('script');
-cornchat.setAttribute('src','https://localhost:8080/bundle.js');
+cornchat.setAttribute('src','https://localhost:8080/TestCornChat-bundle.js');
 document.head.appendChild(cornchat);
 ```
-You'll need to browse to `https://localhost:8080/bundle.js` and accept the TLS cert, first.
+You'll need to browse to `https://localhost:8080/TestCornChat-bundle.js` and accept the TLS cert, first.
 
 ### Deploy
 The app is hosted on github pages:
-https://rkuzsma.github.io/cornchat/bundle.js
+* https://rkuzsma.github.io/cornchat/TestCornChat-bundle.js
+* https://rkuzsma.github.io/cornchat/ProdCornChat-bundle.js
 
-Build and deploy for production using:
+Build and deploy for dev and production using:
 ```
-npm run build
+npm run build:dev
+npm run build:prod
 npm run deploy
 ```

@@ -4,6 +4,14 @@ const path = require('path');
 const fs = require('fs');
 const webpack = require('webpack');
 
+const envVar = (varName, defaultVal) => {
+  return process.env[varName] ?
+    process.env[varName] :
+    defaultVal;
+}
+
+const CORNCHAT_APP_NAME = envVar('CORNCHAT_APP_NAME', "TestCornChat");
+
 const devConfig = {
   // https://localhost:8080/bundle.js
   // https://localhost:8080/cornchat.css
@@ -23,8 +31,7 @@ const devConfig = {
   },
   devtool: 'inline-source-map',  // turn off eval() statements so we can map source easier in the debugger
   output: {
-    filename: 'bundle.js',
-    path: path.resolve(__dirname, 'dist')
+    filename: CORNCHAT_APP_NAME+'-bundle.js'
   },
   mode: 'development'
 }
