@@ -1,6 +1,7 @@
 const merge = require('webpack-merge');
 const commonPromise = require('./webpack.common.js');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+//const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 const prodConfig = {
   output: {
@@ -8,9 +9,10 @@ const prodConfig = {
     publicPath: "/cornchat/",
   },
   plugins: [
-     new CopyWebpackPlugin([
-         { from: 'src/assets' }
-     ])
+    //new BundleAnalyzerPlugin(),
+    new CopyWebpackPlugin([
+      { from: 'src/assets' }
+    ])
  ],
   mode: 'production'
 }

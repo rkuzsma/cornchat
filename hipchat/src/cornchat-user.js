@@ -1,5 +1,5 @@
 import log from './logger';
-import AWS from 'aws-sdk';
+import AWS from 'aws-sdk/global';
 import ApiToken from './api-token';
 import Constants from './constants';
 

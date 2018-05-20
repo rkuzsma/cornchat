@@ -1,5 +1,7 @@
 import log from './logger';
-import AWS from 'aws-sdk';
+import AWS from 'aws-sdk/global';
+import Lambda from 'aws-sdk/clients/lambda';
+
 import HipchatWindow from './hipchat-window';
 
 class ApiToken {
@@ -14,7 +16,7 @@ class ApiToken {
       // This lambda can be invoked without authenticated credentials.
       this._resetCognitoCreds();
       log("ApiToken: generateToken(" + hipchatUserId + ")");
-      var lambda = new AWS.Lambda();
+      var lambda = new Lambda();
       lambda.invoke({
         FunctionName: CORNCHAT_APP_NAME + '-GenerateTokenLambda',
         Payload: JSON.stringify({
@@ -35,7 +37,7 @@ class ApiToken {
       // This lambda can (and should) be invoked without authenticated credentials.
       this._resetCognitoCreds();
       log("ApiToken: loginWithApiToken(" + apiToken + ")");
-      var lambda = new AWS.Lambda();
+      var lambda = new Lambda();
       lambda.invoke({
         FunctionName: CORNCHAT_APP_NAME + '-LoginLambda',
         Payload: JSON.stringify({
