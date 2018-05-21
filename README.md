@@ -27,6 +27,10 @@ Open `/Applications/HipChat.app/Contents/Resources/chat.html` and add this line 
 <script src="https://builds.cornchat.online/ProdCornChat-bundle.js"></script>
 ```
 
+## How it Works
+
+CornChat runs as a JavaScript bundle injected into your HipChat UI. It stores your tags and reactions using a private AWS AppSync server and authenticates you using your HipChat OAuth token. CornChat uses technologies like React, Apollo, GraphQL, Webpack, DynamoDB, AWS AppSync, Lambda, VTL, CloudFormation and ESH. [Learn more about how it works underneath](https://www.cornchat.online/how-it-works.html).
+
 
 ## Development Setup - Front-End
 
@@ -121,6 +125,6 @@ CornChat is [free](https://github.com/rkuzsma/cornchat/) and [open source](https
 Reactions, tags, and HipChat message IDs are stored on the CornChat AWS cloud. No guarantees for uptime or data loss. You can always host CornChat yourself if the free, public, hosted version isn't sufficient.
 
 
-## Cure Cancer
+# Cure Cancer
 
-Like CornChat? Hate Cancer? Please help my daughter Quinn and [donate 5 bucks to Alex’s Lemonade Stand](https://www.alexslemonade.org/donate). Don’t think too hard about it, just do it. It takes 2 minutes and the payment form is beautifully designed. You'll feel great doing it.
+Like CornChat? Hate Cancer? Please help my daughter Quinn and [donate 5 bucks to Alex’s Lemonade Stand](https://www.alexslemonade.org/mypage/1455792/donate/nojs). Don’t think too hard about it, just do it. It takes 2 minutes and the payment form is beautifully designed. You'll feel great doing it.
