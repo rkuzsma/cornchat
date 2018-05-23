@@ -26,8 +26,22 @@ class MsgsDecorator extends React.Component {
           }
         }
 
+        // Preserve any embedded images, links, etc.
+        const childHtml = [];
+        $(msgLineEl).children().each(function(i) {
+          childHtml.push(this.outerHTML);
+          this.outerHTML = "CORNCHAT_EMBEDDED_HTML_TOKEN_" + i;
+        });
+
+        // Decorate the msg text
         this.props.decorators.forEach((decorator) => {
           msgLineEl.innerHTML = decorator(msgLineEl.innerText);
+          // Re-inject the embedded images, links
+          let resolvedHtml = msgLineEl.innerHTML;
+          childHtml.forEach((html, i) => {
+            resolvedHtml = resolvedHtml.replace("CORNCHAT_EMBEDDED_HTML_TOKEN_" + i, html);
+          });
+          msgLineEl.innerHTML = resolvedHtml;
         });
       });
     });
