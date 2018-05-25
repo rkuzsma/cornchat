@@ -9,7 +9,7 @@
     "generate-dev-certs": "openssl req -x509 -newkey rsa:4096 -keyout dev-certs/key.pem -out dev-certs/cert.pem -days 365 -nodes -subj \"/CN=cornchat.development.fake/emailAddress=cornchat@fakedomain.com/O=Cornchat/OU=Development/C=US/ST=NH/L=Nowhere\"",
     "trust-dev-certs": "security add-trusted-cert -e hostnameMismatch -r trustRoot -k ~/Library/Keychains/login.keychain dev-certs/cert.pem",
     "build:prod": "CORNCHAT_APP_NAME=ProdCornChat webpack --config webpack.prod.js",
-    "deploy": "echo 'builds.cornchat.online' > ./dist/CNAME && gh-pages -d dist",
+    "deploy": "npm run build:dev && npm run build:prod && echo 'builds.cornchat.online' > ./dist/CNAME && gh-pages -d dist",
     "//": "Patch aws-appsync to fix https://github.com/awslabs/aws-mobile-appsync-sdk-js/issues/128 :",
     "prepare": "patch-package"
   },
