@@ -91,6 +91,9 @@ class CornChatUserContainer extends React.Component {
     });
   }
 
+  // TODO Keep user credentials refreshed every 50 minutes
+  // i.e. ensure: (new Date().getTime() - user.lastAuthenticatedAt < Constants.authentication_timeout_ms))
+
   render() {
     log("CornChatUserContainer: render");
     if (this.state.authUser || this.state.authError) {

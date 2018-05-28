@@ -1,5 +1,4 @@
 import log from './logger';
-import CornChatUser from './cornchat-user';
 import Constants from './constants';
 
 // Usually, a store is backed by some server side persistence.
