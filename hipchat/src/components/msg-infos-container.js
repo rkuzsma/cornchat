@@ -19,10 +19,12 @@ class MsgInfosContainer extends React.Component {
   }
 
   componentWillMount() {
+    log("MsgInfosContainer: subscribeToNewMsgInfo");
     this.unsubscribe = this.props.subscribeToNewMsgInfo();
   }
 
   componentWillUnmount() {
+    log("MsgInfosContainer: unsubscribe");
     this.unsubscribe();
   }
 
@@ -44,6 +46,7 @@ class MsgInfosContainer extends React.Component {
       return null;
     }
 
+    log("MsgInfosContainer.render() this.props.msgInfos.reactionsByMid.length=" + Object.values(this.props.msgInfos.reactionsByMid).length);
     return this.props.renderProp({
       msgInfos: this.props.msgInfos
     });
@@ -143,9 +146,10 @@ export default graphql(ListMsgInfosQuery, {
         msgInfos: mapResultsToProps(resultProps),
         // Expose a subscription function to listen for updates:
         subscribeToNewMsgInfo: (params) => {
-          resultProps.data.subscribeToMore({
+          return resultProps.data.subscribeToMore({
             document: SubMsgInfo,
             updateQuery: (prev, current) => {
+              log("MsgInfosContainer: updateQuery");
               let { subscriptionData: { data : { changedMsgInfo } } } = current;
               return {
                 ...prev,

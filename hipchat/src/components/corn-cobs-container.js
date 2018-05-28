@@ -29,6 +29,7 @@ class CornCobsContainer extends React.Component {
       emoji: reaction.emoji
     }
     if (reaction.isMyReaction) {
+      log("CornCobsContainer: Remove my reaction to " + reactionData.emoji);
       return this.props.mutateRemoveReaction({
         variables: {...reactionData},
         // Not required, because we have a subscription:
@@ -41,6 +42,7 @@ class CornCobsContainer extends React.Component {
       });
     }
     else {
+      log("CornCobsContainer: Add my reaction to " + reactionData.emoji);
       return this.props.mutateAddReaction({
         variables: {...reactionData},
         // Not required, because we have a subscription:
@@ -60,7 +62,7 @@ class CornCobsContainer extends React.Component {
       room: this.props.roomId,
       name: tag.name
     }
-    log("handleAddTag: " + JSON.stringify(tagData));
+    log("CornCobsContainer: handleAddTag: " + JSON.stringify(tagData));
     return this.props.mutateAddTag({
       variables: {...tagData}
       // refetchQueries: [ {
