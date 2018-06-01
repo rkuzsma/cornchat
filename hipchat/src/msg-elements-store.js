@@ -68,7 +68,14 @@ class MsgElementsStore {
       const hasMsgLineDiv = msgLineDiv.length;
       if (hasMsgLineDiv) {
         const msgId = $(msgLineDiv).data('mid');
-        currentElements.push({msgEl: msg, msgId: msgId});
+        // When HipChat first adds a message element into the DOM,
+        // its data-mid attribute is a number (e.g. 0, 1, 2, ...),
+        // not a UUID. After a few seconds, HipChat converts this
+        // number to a string that looks like a UUID.
+        // Wait until we have a UUID.
+        if (isNaN(msgId)) {
+          currentElements.push({msgEl: msg, msgId: msgId});
+        }
       }
     });
     return currentElements;

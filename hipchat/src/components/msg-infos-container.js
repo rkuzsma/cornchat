@@ -7,6 +7,10 @@ import { graphql } from 'react-apollo';
 import ListMsgInfosQuery from '../queries/listMsgInfos';
 import SubMsgInfo from '../subscriptions/subMsgInfo';
 
+// AWS DynamoDB only allows BatchGetItem of at most 100 items at a time.
+// Therefore, we fetch all MsgInfo records in batches of 100.
+const MAX_DYNAMO_DB_ITEMS=100;
+
 class MsgInfosContainer extends React.Component {
   static propTypes = {
     renderProp: PropTypes.func.isRequired,
@@ -16,6 +20,7 @@ class MsgInfosContainer extends React.Component {
 
   constructor(props) {
     super(props);
+    this.state = {};
   }
 
   componentWillMount() {
@@ -28,8 +33,38 @@ class MsgInfosContainer extends React.Component {
     this.unsubscribe();
   }
 
+  componentDidMount() {
+    log("MsgInfosContainer: componentDidMount");
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    log("MsgInfosContainer: componentDidUpdate");
+
+    if (!this.props.loading) {
+      // Check if there are any new HipChat messages to fetch
+
+      const currentMids = msgIds(this.props.msgElements);
+      const alreadyFetchedMids = this.props.msgInfos.allDistinctMids;
+      const midsQueuedForFetch = this.state.midsQueuedForFetch || {};
+      const newMids = currentMids.filter((mid) => (!alreadyFetchedMids[mid] && !midsQueuedForFetch[mid]));
+      if (newMids.length > 0) {
+        newMids.forEach((mid) => midsQueuedForFetch[mid] = true);
+        this.setState({ midsQueuedForFetch: midsQueuedForFetch });
+
+        let cursor = 0;
+        while(true) {
+          const someMids = newMids.slice(cursor, cursor + MAX_DYNAMO_DB_ITEMS);
+          if (someMids.length == 0) return;
+          log("MsgInfosContainer: fetchMoreMsgInfos: " + cursor + " to " + (cursor + MAX_DYNAMO_DB_ITEMS));
+          cursor += MAX_DYNAMO_DB_ITEMS;
+          this.props.fetchMoreMsgInfos(someMids);
+        }
+      }
+    }
+  }
+
   render() {
-    log("MsgInfosContainer.render()");
+    log("MsgInfosContainer.render() " + (this.props.msgInfos?.allMids?.length) + " mids");
 
     if (this.props.error) {
       log("MsgInfosContainer: Error in graphql data: " + JSON.stringify(this.props.error));
@@ -46,12 +81,23 @@ class MsgInfosContainer extends React.Component {
       return null;
     }
 
-    log("MsgInfosContainer.render() this.props.msgInfos.reactionsByMid.length=" + Object.values(this.props.msgInfos.reactionsByMid).length);
     return this.props.renderProp({
       msgInfos: this.props.msgInfos
     });
   }
 }
+
+const emptyMsgInfos = () => {
+  return {
+    allMids: [],
+    allDistinctMids: {},
+    tagsByMid: {},
+    reactionsByMid: {},
+    allDistinctTags: {},
+    recentTagNames: []
+  }
+}
+
 
 // Clean up the graphql data we get back into a more usable structure for CornCobs.
 // Returns de-duped tags fetched from graphql, keyed off the msginfo mid, e.g.:
@@ -71,18 +117,18 @@ class MsgInfosContainer extends React.Component {
 //              "deadbeef-c937-44d8-bf54-bf54bf54bf54": [{name: "Green"}] },
 //  recentTagNames: ["Red", "Blue", "Green"]
 // }
-const mapResultsToProps = ({ data, ownProps }) => {
-  let result = {
-    tagsByMid: {},
-    recentTagNames: [],
-    reactionsByMid: {}
-  }
-  let tags = {};
-  let reactions = {};
-  let allDistinctTags = {};
+//
+// This method merges new data onto an existingMsgInfos props
+// Warning: existingMsgInfos is mutated in place to avoid the overhead of a copy.
+// Callers should use the returned result and not their mutated existingMsgInfos.
+const mapResultsToProps = (data, existingMsgInfos, hipchatUserId) => {
+  let { allMids, allDistinctMids, tagsByMid, reactionsByMid, allDistinctTags, recentTagNames } =
+   (existingMsgInfos || emptyMsgInfos());
+
   if (data && !data.loading && data.listMsgInfos) {
     data.listMsgInfos.items.forEach((midItem) => {
       if (midItem && midItem.mid) {
+        allDistinctMids[midItem.mid] = true;
 
         // filter out duplicate tags
         const distinctTags = {};
@@ -92,7 +138,7 @@ const mapResultsToProps = ({ data, ownProps }) => {
             allDistinctTags[tag.name] = tag;
           });
         }
-        tags[midItem.mid] = Object.values(distinctTags);
+        tagsByMid[midItem.mid] = Object.values(distinctTags);
 
         // Compute totals of emoji reactions provided by each user.
         const distinctReactions = {};
@@ -104,28 +150,39 @@ const mapResultsToProps = ({ data, ownProps }) => {
             count: 0
           };
           distinctReaction.emoji = emoji;
-          distinctReaction.isMyReaction = (userId == ownProps.hipchatUserId);
+          distinctReaction.isMyReaction = (userId == hipchatUserId);
           distinctReaction.distinctUsers[userId] = 1;
           distinctReaction.count =
             Object.keys(distinctReaction.distinctUsers).length;
           distinctReactions[emoji] = distinctReaction;
         });
-        reactions[midItem.mid] = distinctReactions;
+        reactionsByMid[midItem.mid] = distinctReactions;
       }
     });
-    result.tagsByMid = tags,
-    result.recentTagNames = Object.keys(allDistinctTags)
-    result.reactionsByMid = reactions;
+    recentTagNames = Object.keys(allDistinctTags);
+    allMids = Object.keys(allDistinctMids);
   }
+  const result = {
+    allMids: allMids,
+    allDistinctMids: allDistinctMids,
+    tagsByMid: tagsByMid,
+    reactionsByMid: reactionsByMid,
+    allDistinctTags: allDistinctTags,
+    recentTagNames: recentTagNames
+  }
+  log("MsgInfosContainer: mapResultsToProps:");
+  console.dir(result);
   return result;
 }
 
-const getMids = function(msgElements) {
-  let mids = [''];
-  if (msgElements && msgElements.length > 0) {
-    mids = msgElements.map((item) => item.msgId);
-  }
-  return mids;
+const someMids = function(msgElements, cursor) {
+  return msgElements
+    .slice(cursor, cursor + MAX_DYNAMO_DB_ITEMS)
+    .map((item) => item.msgId);
+}
+
+const msgIds = (msgElements) => {
+  return msgElements.map((item) => item.msgId);
 }
 
 // Populate this.props.data with GraphQL data
@@ -134,7 +191,7 @@ export default graphql(ListMsgInfosQuery, {
     options: (ownProps) => ({
       fetchPolicy: 'cache-and-network',
       variables: {
-        mids: getMids(ownProps.msgElements)
+        mids: someMids(ownProps.msgElements, 0)
       }
     }),
     // Handle the response from GraphQL for ListMsgInfosQuery:
@@ -143,7 +200,11 @@ export default graphql(ListMsgInfosQuery, {
         loading: resultProps.data.loading,
         error: resultProps.data.error,
         // Convert GraphQL response to a nicer looking data structure:
-        msgInfos: mapResultsToProps(resultProps),
+        msgInfos: mapResultsToProps(
+          resultProps.data,
+          resultProps.ownProps.msgInfos,
+          resultProps.ownProps.hipchatUserId
+        ),
         // Expose a subscription function to listen for updates:
         subscribeToNewMsgInfo: (params) => {
           return resultProps.data.subscribeToMore({
@@ -159,6 +220,31 @@ export default graphql(ListMsgInfosQuery, {
                   items: [changedMsgInfo, ...prev.listMsgInfos.items.filter(item => item?.mid !== changedMsgInfo.mid)]
                 }
               }
+            }
+          });
+        },
+        // Expose a function to fetch more msgInfos (paging for > 100 items)
+        fetchMoreMsgInfos: (midsToFetch) => {
+          log("MsgInfosContainer: fetchMoreMsgInfos for " + midsToFetch.length + " mids");
+          if (midsToFetch.length === 0) {
+            return null;
+          }
+          return resultProps.data.fetchMore({
+            query: ListMsgInfosQuery,
+            variables: { mids: midsToFetch },
+            updateQuery: (previousResult, { fetchMoreResult }) => {
+              log("MsgInfosContainer: fetchMoreMsgInfos: updateQuery with " + fetchMoreResult.listMsgInfos.items.length + " more results");
+              const mergedItems = [
+                ...previousResult.listMsgInfos.items,
+                ...fetchMoreResult.listMsgInfos.items,
+              ];
+              const mergedResult = Object.assign({}, previousResult, {
+                listMsgInfos: {
+                  items: mergedItems,
+                  __typename: "MsgInfoList"
+                }
+              });
+              return mergedResult;
             }
           });
         }
