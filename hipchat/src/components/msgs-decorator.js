@@ -25,24 +25,46 @@ class MsgsDecorator extends React.Component {
             msgLineEl = truncatedEl[0];
           }
         }
-
+        const originalHTML = msgLineEl.innerHTML;
+        
         // Preserve any embedded images, links, etc.
         const childHtml = [];
         $(msgLineEl).children().each(function(i) {
-          childHtml.push(this.outerHTML);
-          this.outerHTML = "CORNCHAT_EMBEDDED_HTML_TOKEN_" + i;
+          // .innerText converts <br> to newlines, which we need for proper syntax highlighting to work
+          if (this.outerHTML !== '<br>') {
+            childHtml.push(this.outerHTML);
+            this.outerHTML = "CORNCHAT_EMBEDDED_HTML_TOKEN_" + i;
+          }
         });
 
+
         // Decorate the msg text
+        let isDecorated = false;
         this.props.decorators.forEach((decorator) => {
-          msgLineEl.innerHTML = decorator(msgLineEl.innerText);
-          // Re-inject the embedded images, links
-          let resolvedHtml = msgLineEl.innerHTML;
-          childHtml.forEach((html, i) => {
-            resolvedHtml = resolvedHtml.replace("CORNCHAT_EMBEDDED_HTML_TOKEN_" + i, html);
-          });
-          msgLineEl.innerHTML = resolvedHtml;
+          const decorated = decorator(msgLineEl.innerText);
+          if (decorated !== msgLineEl.innerText) {
+            isDecorated = true;
+            msgLineEl.innerHTML = decorated;
+            // Re-inject the embedded images, links
+            let resolvedHtml = msgLineEl.innerHTML;
+            childHtml.forEach((html, i) => {
+              resolvedHtml = resolvedHtml.replace("CORNCHAT_EMBEDDED_HTML_TOKEN_" + i, html);
+            });
+            msgLineEl.innerHTML = resolvedHtml;
+          }
         });
+        if (!isDecorated) {
+          // No changes made; revert back to version without any CORNCHAT_EMBEDDED_HTML_TOKEN_#s
+          msgLineEl.innerHTML = originalHTML;
+        }
+        else {
+          // Preserve original HTML so user can revert later in the UI
+          msgLineEl.setAttribute('CORNCHAT-undecorated-html', originalHTML);
+          msgLineEl.innerHTML = '<div class="CORN-toggle-markdown">' +
+            '<div class="CORN-toggle-markdown-button" onClick="var msg=this.parentElement.parentElement; msg.innerHTML=msg.getAttribute(\'CORNCHAT-undecorated-html\');">Show Original</div>' +
+            msgLineEl.innerHTML +
+            '</div>';
+        }
       });
     });
     return null;

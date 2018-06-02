@@ -23,6 +23,28 @@ body {
 .CORN-reaction-count {
   font-size: 80%
 }
+.CORN-toggle-markdown-button {
+  display: none;
+  position: absolute;
+  background-color: #4CAF50;
+  padding: 1px;
+  color: white;
+  border:none;
+  vertical-align:middle;
+  overflow:hidden;
+  text-decoration:none;
+  text-align:center;
+  cursor:pointer;
+  white-space:nowrap;
+  top: -21px;
+  border-radius: 2px;
+}
+.CORN-toggle-markdown-button:hover {
+  display: inline-block;
+}
+.CORN-toggle-markdown:hover div {
+  display: inline-block;
+}
 .CORN-tag {
   font-size: 80%;
   color: #000000;
