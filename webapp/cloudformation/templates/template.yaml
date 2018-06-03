@@ -117,6 +117,127 @@ Resources:
         WriteCapacityUnits: 1
 
 
+# For Auto-Scaling DynamoDB tables:
+
+  DynamoDBScalingRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+     AssumeRolePolicyDocument:
+      Version: "2012-10-17"
+      Statement:
+       -
+        Effect: Allow
+        Principal:
+         Service:
+          -
+           "application-autoscaling.amazonaws.com"
+        Action:
+         -
+          "sts:AssumeRole"
+     Path: "/"
+     Policies:
+      -
+       PolicyName: root
+       PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+         -
+          Effect: Allow
+          Action:
+           - "dynamodb:DescribeTable"
+           - "dynamodb:UpdateTable"
+           - "cloudwatch:PutMetricAlarm"
+           - "cloudwatch:DescribeAlarms"
+           - "cloudwatch:GetMetricStatistics"
+           - "cloudwatch:SetAlarmState"
+           - "cloudwatch:DeleteAlarms"
+          Resource: "*"
+
+  DynamoDBTableMsgInfoReadCapacityScalableTarget:
+    Type: "AWS::ApplicationAutoScaling::ScalableTarget"
+    DependsOn:
+      - DynamoDBScalingRole
+      - DynamoDBTableMsgInfo
+    Properties:
+      MinCapacity: 2
+      MaxCapacity: 50
+      ResourceId: !Sub table/${AppName}_MsgInfo
+      RoleARN: !GetAtt DynamoDBScalingRole.Arn
+      ScalableDimension: "dynamodb:table:ReadCapacityUnits"
+      ServiceNamespace: dynamodb
+
+  DynamoDBTableMsgInfoReadScalingPolicy:
+    Type: "AWS::ApplicationAutoScaling::ScalingPolicy"
+    DependsOn:
+      - DynamoDBTableMsgInfoReadCapacityScalableTarget
+    Properties:
+      PolicyName: ReadAutoScalingPolicy
+      PolicyType: TargetTrackingScaling
+      ScalingTargetId:
+        Ref: DynamoDBTableMsgInfoReadCapacityScalableTarget
+      TargetTrackingScalingPolicyConfiguration:
+        TargetValue: 70
+        ScaleInCooldown: 60
+        ScaleOutCooldown: 60
+        PredefinedMetricSpecification:
+          PredefinedMetricType: DynamoDBReadCapacityUtilization
+
+  DynamoDBTableMsgInfoWriteCapacityScalableTarget:
+    Type: "AWS::ApplicationAutoScaling::ScalableTarget"
+    DependsOn:
+      - DynamoDBScalingRole
+      - DynamoDBTableMsgInfo
+    Properties:
+      MinCapacity: 1
+      MaxCapacity: 3
+      ResourceId: !Sub table/${AppName}_MsgInfo
+      RoleARN: !GetAtt DynamoDBScalingRole.Arn
+      ScalableDimension: "dynamodb:table:WriteCapacityUnits"
+      ServiceNamespace: dynamodb
+
+  DynamoDBTableMsgInfoWriteScalingPolicy:
+    Type: "AWS::ApplicationAutoScaling::ScalingPolicy"
+    DependsOn:
+      - DynamoDBTableMsgInfoWriteCapacityScalableTarget
+    Properties:
+      PolicyName: WriteAutoScalingPolicy
+      PolicyType: TargetTrackingScaling
+      ScalingTargetId:
+        Ref: DynamoDBTableMsgInfoWriteCapacityScalableTarget
+      TargetTrackingScalingPolicyConfiguration:
+        TargetValue: 70
+        ScaleInCooldown: 60
+        ScaleOutCooldown: 60
+        PredefinedMetricSpecification:
+          PredefinedMetricType: DynamoDBWriteCapacityUtilization
+
+  DynamoDBTableApiTokensReadCapacityScalableTarget:
+    Type: "AWS::ApplicationAutoScaling::ScalableTarget"
+    DependsOn:
+      - DynamoDBScalingRole
+      - DynamoDBTableMsgInfo
+    Properties:
+      MinCapacity: 1
+      MaxCapacity: 5
+      ResourceId: !Sub table/${AppName}_ApiTokens
+      RoleARN: !GetAtt DynamoDBScalingRole.Arn
+      ScalableDimension: "dynamodb:table:ReadCapacityUnits"
+      ServiceNamespace: dynamodb
+
+  DynamoDBTableApiTokensReadScalingPolicy:
+    Type: "AWS::ApplicationAutoScaling::ScalingPolicy"
+    Properties:
+      PolicyName: ReadAutoScalingPolicy
+      PolicyType: TargetTrackingScaling
+      ScalingTargetId:
+        Ref: DynamoDBTableApiTokensReadCapacityScalableTarget
+      TargetTrackingScalingPolicyConfiguration:
+        TargetValue: 70
+        ScaleInCooldown: 60
+        ScaleOutCooldown: 60
+        PredefinedMetricSpecification:
+          PredefinedMetricType: DynamoDBReadCapacityUtilization
+
 ############## COGNITO IDENTITY POOL
 
   IdentityPool:
