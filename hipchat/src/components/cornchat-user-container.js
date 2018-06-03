@@ -51,6 +51,23 @@ class CornChatUserContainer extends React.Component {
     }
   }
 
+  componentWillMount() {
+    // Auto-Login every 50 minutes to keep the Cognito session from expiring
+    // TODO Consider moving to AWS Amplify library which now has federated
+    // identity login support for Developer pools, and automatic cred refresh.
+    const autoLogin = () => {
+      log("CornChatUserContainer: Keeping session alive");
+      this.login(this.props.apiToken);
+    }
+    const interval = 50 * 60 * 1000; // 50 minutes
+    const timer = setInterval(autoLogin, interval);
+    this.setState({timer});
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.state.timer);
+  }
+
   handleAuthenticationError(err) {
     this.setState({ authUser: null, authError: err, loggingIn: false });
   }

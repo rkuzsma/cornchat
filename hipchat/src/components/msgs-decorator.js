@@ -26,7 +26,7 @@ class MsgsDecorator extends React.Component {
           }
         }
         const originalHTML = msgLineEl.innerHTML;
-        
+
         // Preserve any embedded images, links, etc.
         const childHtml = [];
         $(msgLineEl).children().each(function(i) {
@@ -36,7 +36,6 @@ class MsgsDecorator extends React.Component {
             this.outerHTML = "CORNCHAT_EMBEDDED_HTML_TOKEN_" + i;
           }
         });
-
 
         // Decorate the msg text
         let isDecorated = false;
@@ -61,7 +60,7 @@ class MsgsDecorator extends React.Component {
           // Preserve original HTML so user can revert later in the UI
           msgLineEl.setAttribute('CORNCHAT-undecorated-html', originalHTML);
           msgLineEl.innerHTML = '<div class="CORN-toggle-markdown">' +
-            '<div class="CORN-toggle-markdown-button" onClick="var msg=this.parentElement.parentElement; msg.innerHTML=msg.getAttribute(\'CORNCHAT-undecorated-html\');">Show Original</div>' +
+            '<div title="Unapply Markdown Formatting" class="CORN-toggle-markdown-button" onClick="var msg=this.parentElement.parentElement; msg.innerHTML=msg.getAttribute(\'CORNCHAT-undecorated-html\');"><span>M⬇</span></div>' +
             msgLineEl.innerHTML +
             '</div>';
         }
