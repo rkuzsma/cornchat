@@ -6,7 +6,8 @@ import PropTypes from 'prop-types';
 class MsgsDecorator extends React.Component {
   static propTypes = {
     msgElements: PropTypes.array.isRequired,
-    decorators: PropTypes.array.isRequired
+    decorators: PropTypes.array.isRequired,
+    settingValues: PropTypes.object
   }
 
   render() {
@@ -40,7 +41,9 @@ class MsgsDecorator extends React.Component {
         // Decorate the msg text
         let isDecorated = false;
         this.props.decorators.forEach((decorator) => {
-          const decorated = decorator(msgLineEl.innerText);
+          log("MsgsDecorator: this.props.settingValues:");
+          console.dir(this.props.settingValues);
+          const decorated = decorator(msgLineEl.innerText, this.props.settingValues);
           if (decorated !== msgLineEl.innerText) {
             isDecorated = true;
             msgLineEl.innerHTML = decorated;

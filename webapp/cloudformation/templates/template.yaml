@@ -33,9 +33,6 @@ Outputs:
   DynamoDBTableNameMsgInfo:
     Description: The name of the DynamoDB MsgInfo Table
     Value: !Ref DynamoDBTableMsgInfo
-  DynamoDBTableNameApiTokens:
-    Description: The name of the DynamoDB ApiTokens Table
-    Value: !Ref DynamoDBTableApiTokens
   GraphQLApiEndpoint:
     Description: The URL to the GraphQL Endpoint
     Value: !GetAtt GraphQLApi.GraphQLUrl
@@ -100,22 +97,6 @@ Resources:
       ProvisionedThroughput:
         ReadCapacityUnits: 5
         WriteCapacityUnits: 1
-
-  DynamoDBTableApiTokens:
-    Type: "AWS::DynamoDB::Table"
-    Description: "Data store for CornChat API Tokens"
-    Properties:
-      TableName: !Sub ${AppName}_ApiTokens
-      AttributeDefinitions:
-        - AttributeName: "apiToken"
-          AttributeType: "S"
-      KeySchema:
-        - AttributeName: "apiToken"
-          KeyType: "HASH"
-      ProvisionedThroughput:
-        ReadCapacityUnits: 5
-        WriteCapacityUnits: 1
-
 
 # For Auto-Scaling DynamoDB tables:
 
@@ -211,32 +192,6 @@ Resources:
         PredefinedMetricSpecification:
           PredefinedMetricType: DynamoDBWriteCapacityUtilization
 
-  DynamoDBTableApiTokensReadCapacityScalableTarget:
-    Type: "AWS::ApplicationAutoScaling::ScalableTarget"
-    DependsOn:
-      - DynamoDBScalingRole
-      - DynamoDBTableMsgInfo
-    Properties:
-      MinCapacity: 1
-      MaxCapacity: 5
-      ResourceId: !Sub table/${AppName}_ApiTokens
-      RoleARN: !GetAtt DynamoDBScalingRole.Arn
-      ScalableDimension: "dynamodb:table:ReadCapacityUnits"
-      ServiceNamespace: dynamodb
-
-  DynamoDBTableApiTokensReadScalingPolicy:
-    Type: "AWS::ApplicationAutoScaling::ScalingPolicy"
-    Properties:
-      PolicyName: ReadAutoScalingPolicy
-      PolicyType: TargetTrackingScaling
-      ScalingTargetId:
-        Ref: DynamoDBTableApiTokensReadCapacityScalableTarget
-      TargetTrackingScalingPolicyConfiguration:
-        TargetValue: 70
-        ScaleInCooldown: 60
-        ScaleOutCooldown: 60
-        PredefinedMetricSpecification:
-          PredefinedMetricType: DynamoDBReadCapacityUtilization
 
 ############## COGNITO IDENTITY POOL
 
@@ -290,8 +245,7 @@ Resources:
   CognitoAuthorizedUserPolicy:
     Type: AWS::IAM::ManagedPolicy
     DependsOn:
-      - LoginLambda
-      - GenerateTokenLambda
+      - AuthenticateLambda
     Properties:
       Description: Managed policy for Authorized CornChat users.
       PolicyDocument:
@@ -300,8 +254,7 @@ Resources:
           - Effect: Allow
             Action: "lambda:InvokeFunction"
             Resource:
-              - !GetAtt LoginLambda.Arn
-              - !GetAtt GenerateTokenLambda.Arn
+              - !GetAtt AuthenticateLambda.Arn
           - Effect: Allow
             Action: "appsync:GraphQL"
             Resource:
@@ -337,8 +290,7 @@ Resources:
   CognitoUnAuthorizedUserPolicy:
     Type: AWS::IAM::ManagedPolicy
     DependsOn:
-      - LoginLambda
-      - GenerateTokenLambda
+      - AuthenticateLambda
     Properties:
       Description: Managed policy for UnAuthorized CornChat users
       PolicyDocument:
@@ -347,8 +299,7 @@ Resources:
           - Effect: Allow
             Action: "lambda:InvokeFunction"
             Resource:
-              - !GetAtt LoginLambda.Arn
-              - !GetAtt GenerateTokenLambda.Arn
+              - !GetAtt AuthenticateLambda.Arn
           - Effect: Allow
             Resource: "*"
             Action:
@@ -493,102 +444,39 @@ Resources:
 
 ############# LAMBDAS #############
 
-  GenerateTokenLambda:
+  AuthenticateLambda:
     Type: "AWS::Lambda::Function"
     DependsOn:
-      - DynamoDBTableApiTokens
-      - GenerateTokenRole
-      - GenerateTokenPolicy
+      - AuthenticateRole
+      - AuthenticatePolicy
+      - IdentityPool
     Properties:
-      FunctionName: !Sub ${AppName}-GenerateTokenLambda
-      Description: Allow users to generate a CornChat API token by providing a valid HipChat User ID and HipChat OAuth token
+      FunctionName: !Sub ${AppName}-AuthenticateLambda
+      Description: Allow users to authenticate with CornChat by providing a valid HipChat User ID and HipChat OAuth token.
       Code:
         S3Bucket: !Sub ${LambdaS3Bucket}
-        S3Key: !Sub ${LambdaS3Folder}/GenerateToken.zip
+        S3Key: !Sub ${LambdaS3Folder}/Authenticate.zip
       Environment:
         Variables:
-          CORNCHAT_TABLE_API_TOKENS: !Ref DynamoDBTableApiTokens
-      Role: !GetAtt GenerateTokenRole.Arn
+          CORNCHAT_IDENTITY_POOL_ID: !Ref IdentityPool
+          CORNCHAT_IDENTITY_POOL_DEVELOPER_PROVIDER_NAME: !Sub login.${AppName}
+      Role: !GetAtt AuthenticateRole.Arn
       Timeout: 10
       Handler: "index.handler"
       Runtime: "nodejs8.10"
       MemorySize: 128
 
-  GenerateTokenPolicy:
+  AuthenticatePolicy:
     Type: AWS::IAM::ManagedPolicy
-    DependsOn:
-      - DynamoDBTableApiTokens
     Properties:
-      Description: Specifies which resources the "GenerateToken" lambda function can access.
+      Description: Specifies which resources the "Authenticate" lambda function can access.
       PolicyDocument:
         Version: 2012-10-17
         Statement:
-          - Effect: Allow
-            Action:
-              - dynamodb:PutItem
-              - dynamodb:UpdateItem
-            Resource: !GetAtt DynamoDBTableApiTokens.Arn
           - Effect: Allow
             Resource: "arn:aws:logs:::*"
             Action:
               - "logs:*"
-
-  GenerateTokenRole:
-    Type: AWS::IAM::Role
-    DependsOn:
-      - GenerateTokenPolicy
-    Properties:
-      RoleName: !Sub ${AppName}-GenerateToken
-      ManagedPolicyArns:
-        - Ref: GenerateTokenPolicy
-      AssumeRolePolicyDocument:
-        Version: 2012-10-17
-        Statement:
-          - Effect: Allow
-            Action:
-              - sts:AssumeRole
-            Principal:
-              Service:
-                - lambda.amazonaws.com
-
-  LoginLambda:
-    Type: "AWS::Lambda::Function"
-    DependsOn:
-      - DynamoDBTableApiTokens
-      - IdentityPool
-      - LoginLambdaRole
-      - LoginLambdaPolicy
-    Properties:
-      FunctionName: !Sub ${AppName}-LoginLambda
-      Description: Allow users to login with a CornChat API Token and get a federated Cognito session token.
-      Code:
-        S3Bucket: !Sub ${LambdaS3Bucket}
-        S3Key: !Sub ${LambdaS3Folder}/Login.zip
-      Environment:
-        Variables:
-          CORNCHAT_IDENTITY_POOL_ID: !Ref IdentityPool
-          CORNCHAT_TABLE_API_TOKENS: !Ref DynamoDBTableApiTokens
-          CORNCHAT_IDENTITY_POOL_DEVELOPER_PROVIDER_NAME: !Sub login.${AppName}
-      Role: !GetAtt LoginLambdaRole.Arn
-      Timeout: 10
-      Handler: "index.handler"
-      Runtime: "nodejs8.10"
-      MemorySize: 128
-
-  LoginLambdaPolicy:
-    Type: AWS::IAM::ManagedPolicy
-    DependsOn:
-      - IdentityPool
-      - DynamoDBTableApiTokens
-    Properties:
-      Description: Specifies which resources the "Login" lambda function can access.
-      PolicyDocument:
-        Version: 2012-10-17
-        Statement:
-          - Effect: Allow
-            Action:
-              - dynamodb:GetItem
-            Resource: !GetAtt DynamoDBTableApiTokens.Arn
           - Effect: Allow
             Action:
               - "cognito-identity:GetOpenIdTokenForDeveloperIdentity"
@@ -600,19 +488,15 @@ Resources:
                 - !Ref AWS::AccountId
                 - ":identitypool/"
                 - !Ref IdentityPool
-          - Effect: Allow
-            Resource: "arn:aws:logs:::*"
-            Action:
-              - "logs:*"
 
-  LoginLambdaRole:
+  AuthenticateRole:
     Type: AWS::IAM::Role
     DependsOn:
-      - LoginLambdaPolicy
+      - AuthenticatePolicy
     Properties:
-      RoleName: !Sub ${AppName}-LoginLambda
+      RoleName: !Sub ${AppName}-Authenticate
       ManagedPolicyArns:
-        - Ref: LoginLambdaPolicy
+        - Ref: AuthenticatePolicy
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:

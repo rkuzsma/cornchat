@@ -1,17 +1,18 @@
 import log from '../logger';
 import PropTypes from 'prop-types';
-import ApiToken from '../api-token';
+import Authenticate from '../authenticate';
 
 class CornChatUserContainer extends React.Component {
   static propTypes = {
     renderProp: PropTypes.func.isRequired,
-    apiToken: PropTypes.string
+    hipchatUserId: PropTypes.number,
+    hipchatOauthToken: PropTypes.string
   }
 
   constructor(props) {
     super(props);
     this.state = {
-      prevApiToken: props.apiToken,
+      prevHipchatOauthToken: props.hipchatOauthToken,
       authUser: null,
       authError: null,
       loggingIn: false
@@ -22,12 +23,12 @@ class CornChatUserContainer extends React.Component {
 
   static getDerivedStateFromProps(nextProps, prevState) {
     log("CornChatUserContainer: getDerivedStateFromProps");
-    // Store prevApiToken in state so we can compare when props change.
+    // Store prevHipchatOauthToken in state so we can compare when props change.
     // Clear out any previously authenticated user.
-    if (nextProps.apiToken !== prevState.prevApiToken) {
+    if (nextProps.hipchatOauthToken !== prevState.prevHipchatOauthToken) {
       log("CornChatUserContainer: getDerivedStateFromProps - different");
       return {
-        prevApiToken: nextProps.apiToken,
+        prevHipchatOauthToken: nextProps.hipchatOauthToken,
         authUser: null,
         authError: null
       };
@@ -39,29 +40,26 @@ class CornChatUserContainer extends React.Component {
 
   componentDidMount() {
     log("CornChatUserContainer: componentDidMount - login");
-    this.login(this.props.apiToken);
-  }
+    this.login();
 
-  componentDidUpdate(prevProps, prevState) {
-    log("CornChatUserContainer: componentDidUpdate");
-    if (this.state.authUser === null && this.state.authError === null && !this.state.loggingIn) {
-      // At this point, we're in the "commit" phase, so it's safe to load the new data.
-      log("CornChatUserContainer: componentDidUpdate - login");
-      this.login(this.props.apiToken);
-    }
-  }
-
-  componentWillMount() {
     // Auto-Login every 50 minutes to keep the Cognito session from expiring
     // TODO Consider moving to AWS Amplify library which now has federated
     // identity login support for Developer pools, and automatic cred refresh.
     const autoLogin = () => {
       log("CornChatUserContainer: Keeping session alive");
-      this.login(this.props.apiToken);
+      this.login();
     }
     const interval = 50 * 60 * 1000; // 50 minutes
     const timer = setInterval(autoLogin, interval);
     this.setState({timer});
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    log("CornChatUserContainer: componentDidUpdate");
+    if (this.state.authUser === null && this.state.authError === null && !this.state.loggingIn) {
+      log("CornChatUserContainer: componentDidUpdate - login");
+      this.login();
+    }
   }
 
   componentWillUnmount() {
@@ -72,20 +70,26 @@ class CornChatUserContainer extends React.Component {
     this.setState({ authUser: null, authError: err, loggingIn: false });
   }
 
-  login(apiToken) {
+  login() {
+    const { hipchatUserId, hipchatOauthToken } = this.props;
     this.setState({ loggingIn: true });
 
     log("CornChatUserContainer: login");
-    if (!apiToken || apiToken === '') {
-      this.handleAuthenticationError("No API Token");
+    if (!hipchatUserId || hipchatUserId === '') {
+      this.handleAuthenticationError("No Hipchat User ID");
       return;
     }
 
-    log("CornChatUserContainer: loginWithApiToken");
-    ApiToken.loginWithApiToken(apiToken, (err, aws) => {
+    if (!hipchatOauthToken || hipchatOauthToken === '') {
+      this.handleAuthenticationError("No Hipchat Oauth Token");
+      return;
+    }
+
+    log("CornChatUserContainer: loginWithHipchatOauthToken");
+    Authenticate.loginWithHipchatOauthToken(hipchatUserId, hipchatOauthToken, (err, aws) => {
       try {
         if (err) {
-          log("CornChatUser: Error authenticating with API Token: " + err);
+          log("CornChatUser: Error authenticating with Hipchat Oauth Token: " + err);
           this.handleAuthenticationError(err);
           return;
         }
@@ -93,7 +97,7 @@ class CornChatUserContainer extends React.Component {
         this.setState({
           authUser: {
             isAuthenticated: true,
-            apiToken: apiToken,
+            hipchatUserId: hipchatUserId,
             aws: aws,
             lastAuthenticatedAt: new Date().getTime()
           },
@@ -102,7 +106,7 @@ class CornChatUserContainer extends React.Component {
         });
       }
       catch(err) {
-        log("CornChatUser: Failed to authenticate user with API Token: " + err);
+        log("CornChatUser: Failed to authenticate user: " + err);
         this.handleAuthenticationError(err);
       }
     });

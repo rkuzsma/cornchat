@@ -79,7 +79,12 @@ markdown.setOptions({
   xhtml: false
 });
 
-export default function decorate(innerText) {
+export default function decorate(innerText, settingValues) {
+  log("MarkdownDecorator: settingValues.isApplyMarkdown=" + settingValues.isApplyMarkdown);
+  if (!settingValues.isApplyMarkdown) {
+    return innerText;
+  }
+
   const decoratedHtml = markdown(innerText);
   // Marked.js surrounds a single, plain-text (no markdown) line inside <p>...</p>
   // If all we did was surround the text in <p>...</p>, return the original so the

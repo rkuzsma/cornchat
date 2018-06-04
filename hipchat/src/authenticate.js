@@ -2,59 +2,31 @@ import log from './logger';
 import AWS from 'aws-sdk/global';
 import Lambda from 'aws-sdk/clients/lambda';
 
-import HipchatWindow from './hipchat-window';
-
-class ApiToken {
-  static generateTokenForCurrentHipChatUser(fn) {
-    var hipchatUserId = HipchatWindow.userId();
-    var hipchatOauthAccessToken = HipchatWindow.oauthToken();
-    ApiToken.generateToken(hipchatUserId, hipchatOauthAccessToken, fn);
-  }
-
-  static generateToken(hipchatUserId, hipchatOauthAccessToken, fn) {
+class Authenticate {
+  static loginWithHipchatOauthToken(hipchatUserId, hipchatOauthAccessToken, fn) {
     try {
       // This lambda can be invoked without authenticated credentials.
       this._resetCognitoCreds();
-      log("ApiToken: generateToken(" + hipchatUserId + ")");
+      log("Authenticate: loginWithHipchatOauthToken(" + hipchatUserId + ", <REDACTED>)");
       var lambda = new Lambda();
       lambda.invoke({
-        FunctionName: CORNCHAT_APP_NAME + '-GenerateTokenLambda',
+        FunctionName: CORNCHAT_APP_NAME + '-AuthenticateLambda',
         Payload: JSON.stringify({
           hipchatUserId: hipchatUserId,
           hipchatOauthAccessToken: hipchatOauthAccessToken
         })
-      }, fn);
-    }
-    catch(err) {
-      log("ApiToken: Error in generateToken: " + err);
-      log(err.stack);
-      fn(err, null);
-    }
-  }
-
-  static loginWithApiToken(apiToken, fn) {
-    try {
-      // This lambda can (and should) be invoked without authenticated credentials.
-      this._resetCognitoCreds();
-      log("ApiToken: loginWithApiToken(" + apiToken + ")");
-      var lambda = new Lambda();
-      lambda.invoke({
-        FunctionName: CORNCHAT_APP_NAME + '-LoginLambda',
-        Payload: JSON.stringify({
-          apiToken: apiToken
-        })
       }, function(err, data) {
         if (err) {
-          log("ApiToken: Login error: " + err);
+          log("Authenticate: Login error: " + err);
           log(err.stack);
           return fn(err, null);
         }
         var output = JSON.parse(data.Payload);
         if (!output.login) {
-          log("ApiToken: Invalid API Token");
-          return fn("Invalid API Token", null);
+          log("Authenticate: Invalid Hipchat Oauth Token");
+          return fn("Invalid Hipchat Oauth Token", null);
         }
-        log("ApiToken: Authenticated user. IdentityId: " + output.identityId + ", token: " + output.token.substring(output.token.length - 10) + "...");
+        log("Authenticate: Authenticated user. IdentityId: " + output.identityId + ", token: " + output.token.substring(output.token.length - 10) + "...");
         var creds = AWS.config.credentials;
         creds.params.IdentityId = output.identityId;
         creds.params.Logins = {
@@ -65,20 +37,20 @@ class ApiToken {
       });
     }
     catch(err) {
-      log("ApiToken: Error in loginWithApiToken: " + err);
+      log("Authenticate: Error in loginWithHipchatOauthToken: " + err);
       log(err.stack);
-      return fn(err, null);
+      fn(err, null);
     }
   }
 
   // Clear your Cognito Creds, ensuring that the next AWS call will be unauthenticated.
   static _resetCognitoCreds() {
     if (AWS.config.credentials?.params) {
-      log("ApiToken: IdentityPoolId: " + AWS.config.credentials.params.IdentityPoolId);
-      log("ApiToken: IdentityId: " + AWS.config.credentials.params.IdentityId);
+      log("Authenticate: IdentityPoolId: " + AWS.config.credentials.params.IdentityPoolId);
+      log("Authenticate: IdentityId: " + AWS.config.credentials.params.IdentityId);
     }
     if (AWS.config.credentials?.params?.IdentityPoolId !== CORNCHAT_IDENTITY_POOL_ID) {
-      log("ApiToken: Resetting AWS Cognito Credentials");
+      log("Authenticate: Resetting AWS Cognito Credentials");
       var anonymousCognitoCreds = new AWS.CognitoIdentityCredentials({
         IdentityPoolId: CORNCHAT_IDENTITY_POOL_ID,
         IdentityId: null
@@ -94,10 +66,10 @@ class ApiToken {
         region: CORNCHAT_AWS_REGION,
         credentials: anonymousCognitoCreds
       });
-      log("ApiToken: IdentityPoolId: " + AWS.config.credentials.params.IdentityPoolId);
-      log("ApiToken: IdentityId: " + AWS.config.credentials.params.IdentityId);
+      log("Authenticate: IdentityPoolId: " + AWS.config.credentials.params.IdentityPoolId);
+      log("Authenticate: IdentityId: " + AWS.config.credentials.params.IdentityId);
     }
   }
 }
 
-export default ApiToken;
+export default Authenticate;

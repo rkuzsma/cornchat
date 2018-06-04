@@ -30,6 +30,7 @@ import MsgElementsContainer from './components/msg-elements-container';
 import MsgInfosContainer from './components/msg-infos-container';
 import CornCobsContainer from './components/corn-cobs-container';
 import HipchatUserIdContainer from './components/hipchat-user-id-container';
+import HipchatOauthTokenContainer from './components/hipchat-oauth-token-container';
 import RoomIdContainer from './components/room-id-container';
 import TagFilterContainer from './components/tag-filter-container';
 import TagFilter from './components/tag-filter';
@@ -61,7 +62,7 @@ class App extends React.Component {
     return (
       <ErrorBoundary>
         <SettingsContainer
-          renderProp={({ onToggleSettingsDialog, isShowSettings, onChangeSettings, settings }) => (
+          renderProp={({ onToggleSettingsDialog, isShowSettings, onChangeSettings, settingValues }) => (
             <div>
               <LogoPortal>
                 <Logo onClick={onToggleSettingsDialog} />
@@ -70,78 +71,84 @@ class App extends React.Component {
                 <SettingsDialog
                   onClose={onToggleSettingsDialog}
                   show={isShowSettings}
-                  token={settings.apiToken}
+                  settingValues={settingValues}
                   onSettingsChanged={onChangeSettings} />
               </div>
-              <CornChatUserContainer
-                apiToken={settings.apiToken}
-                renderProp={({ authUser, authError }) => {
-                  if (authError) {
-                    return ( <AuthenticationErrorMessage authError={authError} /> );
-                  }
-                  if (!authUser) {
-                    return null;
-                  }
-                  return (
-                    <ApolloProvider client={this.appSyncClient(authUser)}>
-                      <Rehydrated>
-                        <div>
-                          <HipchatUserIdContainer
-                            renderProp={({ hipchatUserId }) => (
-                              <RoomIdContainer
-                                renderProp={({ roomId }) => (
-                                  <MsgElementsContainer
-                                    renderProp={({ msgElements }) => (
-                                      <div>
-                                        <MsgsDecorator
-                                          msgElements={msgElements}
-                                          decorators={[MarkdownDecorator]}
-                                        />
-                                        <MsgInfosContainer
-                                          msgElements={msgElements}
-                                          hipchatUserId={hipchatUserId}
-                                          renderProp={({ msgInfos }) => (
-                                            <TagFilterContainer
-                                              msgElements={msgElements}
-                                              tags={msgInfos.tagsByMid}
-                                              renderProp={({ onToggleFilterByTag, currentlyFilteredTag }) => (
-                                                <div>
-                                                  <TagFilter
-                                                    onToggleFilterByTag={onToggleFilterByTag}
-                                                    currentlyFilteredTag={currentlyFilteredTag}
-                                                  />
-                                                  <CornCobsContainer
-                                                    roomId={roomId}
-                                                    renderProp={({ onToggleReaction, onAddTag }) => (
-                                                      <CornCobs
-                                                        msgElements={msgElements}
-                                                        onToggleFilterByTag={onToggleFilterByTag}
-                                                        onToggleReaction={onToggleReaction}
-                                                        onAddTag={onAddTag}
-                                                        tagsByMid={msgInfos.tagsByMid}
-                                                        recentTagNames={msgInfos.recentTagNames}
-                                                        reactionsByMid={msgInfos.reactionsByMid}
-                                                        roomId={roomId} />
-                                                    )}
-                                                  ></CornCobsContainer>
-                                                </div>
-                                              )}
-                                            ></TagFilterContainer>
-                                          )}
-                                        ></MsgInfosContainer>
-                                      </div>
+              <HipchatUserIdContainer
+                renderProp={({ hipchatUserId }) => (
+                  <HipchatOauthTokenContainer
+                    renderProp={({ hipchatOauthToken }) => (
+                      <CornChatUserContainer
+                        hipchatUserId={hipchatUserId}
+                        hipchatOauthToken={hipchatOauthToken}
+                        renderProp={({ authUser, authError }) => {
+                          if (authError) {
+                            return ( <AuthenticationErrorMessage authError={authError} /> );
+                          }
+                          if (!authUser) {
+                            return null;
+                          }
+                          return (
+                            <ApolloProvider client={this.appSyncClient(authUser)}>
+                              <Rehydrated>
+                                <div>
+                                    <RoomIdContainer
+                                        renderProp={({ roomId }) => (
+                                          <MsgElementsContainer
+                                            renderProp={({ msgElements }) => (
+                                              <div>
+                                                <MsgsDecorator
+                                                  settingValues={settingValues}
+                                                  msgElements={msgElements}
+                                                  decorators={[MarkdownDecorator]}
+                                                />
+                                                <MsgInfosContainer
+                                                  msgElements={msgElements}
+                                                  hipchatUserId={hipchatUserId}
+                                                  renderProp={({ msgInfos }) => (
+                                                    <TagFilterContainer
+                                                      msgElements={msgElements}
+                                                      tags={msgInfos.tagsByMid}
+                                                      renderProp={({ onToggleFilterByTag, currentlyFilteredTag }) => (
+                                                        <div>
+                                                          <TagFilter
+                                                            onToggleFilterByTag={onToggleFilterByTag}
+                                                            currentlyFilteredTag={currentlyFilteredTag}
+                                                          />
+                                                          <CornCobsContainer
+                                                            roomId={roomId}
+                                                            renderProp={({ onToggleReaction, onAddTag }) => (
+                                                              <CornCobs
+                                                                msgElements={msgElements}
+                                                                onToggleFilterByTag={onToggleFilterByTag}
+                                                                onToggleReaction={onToggleReaction}
+                                                                onAddTag={onAddTag}
+                                                                tagsByMid={msgInfos.tagsByMid}
+                                                                recentTagNames={msgInfos.recentTagNames}
+                                                                reactionsByMid={msgInfos.reactionsByMid}
+                                                                roomId={roomId} />
+                                                            )}
+                                                          ></CornCobsContainer>
+                                                        </div>
+                                                      )}
+                                                    ></TagFilterContainer>
+                                                  )}
+                                                ></MsgInfosContainer>
+                                              </div>
+                                            )}
+                                          ></MsgElementsContainer>
                                     )}
-                                  ></MsgElementsContainer>
-                                )}
-                              ></RoomIdContainer>
-                            )}
-                          ></HipchatUserIdContainer>
-                        </div>
-                      </Rehydrated>
-                    </ApolloProvider>
-                  );
-                }}
-              ></CornChatUserContainer>
+                                    ></RoomIdContainer>
+                                </div>
+                              </Rehydrated>
+                            </ApolloProvider>
+                          );
+                        }}
+                      ></CornChatUserContainer>
+                    )}
+                  ></HipchatOauthTokenContainer>
+                )}
+              ></HipchatUserIdContainer>
             </div>
           )}
         ></SettingsContainer>

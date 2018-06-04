@@ -1,115 +1,49 @@
 import log from '../logger';
 import React from "react";
 import ReactDOM from "react-dom";
-import Constants from '../constants';
-import Utils from '../utils';
 import PropTypes from 'prop-types';
-import ApiToken from '../api-token';
-import FlashMsg from './flash-msg';
 
 class SettingsDialog extends React.Component {
   static propTypes = {
     onClose: PropTypes.func.isRequired,
     onSettingsChanged: PropTypes.func.isRequired,
     show: PropTypes.bool,
-    token: PropTypes.string.isRequired
+    settingValues: PropTypes.object.isRequired
   }
 
   constructor(props) {
     super(props);
     this.state = {
-      token: props.token,
-      errorMsg: '',
-      statusMsg: '',
-      successMsg: '',
-      successMsgExpiry: null
+      isApplyMarkdown: props.settingValues.isApplyMarkdown
     };
 
-    this.handleTokenChange = this.handleTokenChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
-    this.handleError = this.handleError.bind(this);
-    this.handleStatus = this.handleStatus.bind(this);
-    this.generateToken = this.generateToken.bind(this);
-    this.clearAnySuccessMsgTimer = this.clearAnySuccessMsgTimer.bind(this);
-  }
-
-  handleTokenChange(event) {
-    this.setState({token: event.target.value});
+    this.handleInputChange = this.handleInputChange.bind(this);
   }
 
   handleSubmit(event) {
+    log("SettingsDialog: handleSubmit");
     event.preventDefault();
     this.props.onSettingsChanged({
-      token: this.state.token
+      isApplyMarkdown: this.state.isApplyMarkdown
     });
     this.props.onClose();
   }
 
-  handleError(errorMsg) {
-    this.setState({errorMsg: errorMsg});
-  }
+  handleInputChange(event) {
+    const target = event.target;
+    const value = target.type === 'checkbox' ? target.checked : target.value;
+    const name = target.name;
 
-  handleStatus(statusMsg) {
-    this.setState({statusMsg: statusMsg});
-  }
-
-  componentWillUnmount() {
-    this.clearAnySuccessMsgTimer();
-  }
-
-  clearAnySuccessMsgTimer() {
-    if (this.state.successMsgExpiry) {
-      log(`SettingsDialog: clearTimeout`);
-      window.clearTimeout(this.state.successMsgExpiry);
-    }
-  }
-
-  handleSuccess(successMsg) {
-    this.setState({successMsg: successMsg});
-    // Clear the success message in 5s
-    this.clearAnySuccessMsgTimer();
-    log(`SettingsDialog: setTimeout`);
-    var expiry = window.setTimeout(() => {
-      log(`handleSuccess: timeout reached, resetting successMsg`);
-      this.setState({successMsg: ''});
-    }, 5000);
-    this.setState({successMsgExpiry: expiry});
-  }
-
-  generateToken(event) {
-    event.preventDefault();
-    this.handleError("");
-    this.handleSuccess("");
-    this.handleStatus(`Generating CornChat API token. Please wait...`);
-    ApiToken.generateTokenForCurrentHipChatUser((err, data) => {
-      this.handleStatus("");
-      if (err) {
-        log("Error generating token: " + err);
-        this.handleError("Unexpected error generating API token.");
-      }
-      else {
-        var output = JSON.parse(data.Payload);
-        log(data.Payload);
-        if (output.created) {
-          log("Generated token " + output.apiToken);
-          this.handleSuccess("Generated a token.");
-          this.handleTokenChange({target: { value: output.apiToken} });
-        } else {
-          log("API Token not generated.");
-          this.handleError("Unexpected error generating API token.");
-        }
-      }
+    log("Setting " + name +" to " + value);
+    this.setState({
+      [name]: value
     });
   }
 
   render() {
-    // Render nothing if the "show" prop is false
     if(!this.props.show) {
       return null;
-    }
-
-    const launchLearnMore = function() {
-      Utils.openExternalWindow(Constants.learn_more_url);
     }
 
     return (
@@ -117,24 +51,17 @@ class SettingsDialog extends React.Component {
         <div>
           <div className="CORN-clearfix">
             <h1 className="CORN-dialog-heading">CornChat Settings</h1>
-            <span className="CORN-dialog-x" onClick={this.props.onClose}>x</span>
+            <span className="CORN-dialog-x" onClick={this.handleSubmit}>x</span>
           </div>
           <hr/>
-          <FlashMsg className="CORN-error" msg={this.state.errorMsg} />
-          <FlashMsg className="CORN-success" msg={this.state.successMsg} />
-          <FlashMsg className="CORN-info" msg={this.state.statusMsg} />
           <form>
             <label>
-              CornChat API Token:<br/>
-              <input type="text" value={this.state.token} onChange={this.handleTokenChange} size="35" />
-              <button className="CORN-button" onClick={this.generateToken}>Generate</button>
+              <input name="isApplyMarkdown" type="checkbox" checked={this.state.isApplyMarkdown} onChange={this.handleInputChange} size="35" />
+              Apply Markdown Formatting to Messages
             </label>
             <p/>
-            <button className="CORN-button-default" onClick={this.handleSubmit}>Save</button>
+            <button className="CORN-button-default" onClick={this.handleSubmit}>Close</button>
           </form>
-          <p>&nbsp;</p>
-          <p><i>Why does CornChat require a token?</i></p>
-          <p>CornChat stores message tags on its own server. The token prevents abuse. Learn more at the <a onClick={launchLearnMore}>CornChat GitHub page</a></p>
         </div>
       </div>
     );
