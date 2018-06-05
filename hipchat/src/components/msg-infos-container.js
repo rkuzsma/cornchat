@@ -23,11 +23,6 @@ class MsgInfosContainer extends React.Component {
     this.state = {};
   }
 
-  componentWillMount() {
-    log("MsgInfosContainer: subscribeToNewMsgInfo");
-    this.unsubscribe = this.props.subscribeToNewMsgInfo();
-  }
-
   componentWillUnmount() {
     log("MsgInfosContainer: unsubscribe");
     this.unsubscribe();
@@ -35,6 +30,7 @@ class MsgInfosContainer extends React.Component {
 
   componentDidMount() {
     log("MsgInfosContainer: componentDidMount");
+    this.unsubscribe = this.props.subscribeToNewMsgInfo();
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -125,6 +121,9 @@ const mapResultsToProps = (data, existingMsgInfos, hipchatUserId) => {
   let { allMids, allDistinctMids, tagsByMid, reactionsByMid, allDistinctTags, recentTagNames } =
    (existingMsgInfos || emptyMsgInfos());
 
+   log("MsgInfosContainer: mapResultsToProps called; existingMsgInfos:");
+   console.dir(existingMsgInfos);
+
   if (data && !data.loading && data.listMsgInfos) {
     data.listMsgInfos.items.forEach((midItem) => {
       if (midItem && midItem.mid) {
@@ -170,7 +169,7 @@ const mapResultsToProps = (data, existingMsgInfos, hipchatUserId) => {
     allDistinctTags: allDistinctTags,
     recentTagNames: recentTagNames
   }
-  log("MsgInfosContainer: mapResultsToProps:");
+  log("MsgInfosContainer: mapResultsToProps result:");
   console.dir(result);
   return result;
 }
@@ -196,6 +195,8 @@ export default graphql(ListMsgInfosQuery, {
     }),
     // Handle the response from GraphQL for ListMsgInfosQuery:
     props: (resultProps) => {
+      log("!!!! graphql:");
+      console.dir(resultProps);
       return {
         loading: resultProps.data.loading,
         error: resultProps.data.error,
@@ -207,6 +208,7 @@ export default graphql(ListMsgInfosQuery, {
         ),
         // Expose a subscription function to listen for updates:
         subscribeToNewMsgInfo: (params) => {
+          log("MsgInfosContainer: subscribeToNewMsgInfo");
           return resultProps.data.subscribeToMore({
             document: SubMsgInfo,
             updateQuery: (prev, current) => {

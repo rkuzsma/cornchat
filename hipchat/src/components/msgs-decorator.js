@@ -41,8 +41,6 @@ class MsgsDecorator extends React.Component {
         // Decorate the msg text
         let isDecorated = false;
         this.props.decorators.forEach((decorator) => {
-          log("MsgsDecorator: this.props.settingValues:");
-          console.dir(this.props.settingValues);
           const decorated = decorator(msgLineEl.innerText, this.props.settingValues);
           if (decorated !== msgLineEl.innerText) {
             isDecorated = true;

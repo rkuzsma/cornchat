@@ -80,7 +80,6 @@ markdown.setOptions({
 });
 
 export default function decorate(innerText, settingValues) {
-  log("MarkdownDecorator: settingValues.isApplyMarkdown=" + settingValues.isApplyMarkdown);
   if (!settingValues.isApplyMarkdown) {
     return innerText;
   }

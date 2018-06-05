@@ -49,7 +49,8 @@ class CornChatUserContainer extends React.Component {
       log("CornChatUserContainer: Keeping session alive");
       this.login();
     }
-    const interval = 50 * 60 * 1000; // 50 minutes
+    //const interval = 50 * 60 * 1000; // 50 minutes
+    const interval = 1 * 60 * 1000; // 50 minutes
     const timer = setInterval(autoLogin, interval);
     this.setState({timer});
   }
