@@ -24,8 +24,7 @@ import SettingsContainer from './components/settings-container';
 import SettingsDialog from './components/settings-dialog';
 import LogoPortal from './components/logo-portal';
 import Logo from './components/logo';
-import AuthenticationErrorMessage from './components/authentication-error-message';
-import CornChatUserContainer from './components/cornchat-user-container';
+import AppSyncClientContainer from './components/app-sync-client-container';
 import MsgElementsContainer from './components/msg-elements-container';
 import MsgInfosContainer from './components/msg-infos-container';
 import CornCobsContainer from './components/corn-cobs-container';
@@ -77,17 +76,10 @@ class App extends React.Component {
                 renderProp={({ hipchatUserId }) => (
                   <HipchatOauthTokenContainer
                     renderProp={({ hipchatOauthToken }) => (
-                      <CornChatUserContainer
+                      <AppSyncClientContainer
                         hipchatUserId={hipchatUserId}
                         hipchatOauthToken={hipchatOauthToken}
-                        renderProp={({ appSyncClient, authError }) => {
-                          if (authError) {
-                            return ( <AuthenticationErrorMessage authError={authError} /> );
-                          }
-                          if (!appSyncClient) {
-                            return null;
-                          }
-                          return (
+                        renderProp={({ appSyncClient }) => (
                             <ApolloProvider client={appSyncClient}>
                               <Rehydrated>
                                 <div>
@@ -141,9 +133,8 @@ class App extends React.Component {
                                 </div>
                               </Rehydrated>
                             </ApolloProvider>
-                          );
-                        }}
-                      ></CornChatUserContainer>
+                        )}
+                      ></AppSyncClientContainer>
                     )}
                   ></HipchatOauthTokenContainer>
                 )}
