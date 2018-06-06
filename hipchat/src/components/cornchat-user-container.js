@@ -1,6 +1,7 @@
 import log from '../logger';
 import PropTypes from 'prop-types';
 import Authenticate from '../authenticate';
+import AWSAppSyncClient from "aws-appsync";
 
 class CornChatUserContainer extends React.Component {
   static propTypes = {
@@ -13,12 +14,15 @@ class CornChatUserContainer extends React.Component {
     super(props);
     this.state = {
       prevHipchatOauthToken: props.hipchatOauthToken,
-      authUser: null,
+      appSyncClient: null,
+      hipchatUserId: null,
+      hipchatOauthToken: null,
       authError: null,
       loggingIn: false
     };
     this.login = this.login.bind(this);
     this.handleAuthenticationError = this.handleAuthenticationError.bind(this);
+    this.appSyncClient = this.appSyncClient.bind(this);
   }
 
   static getDerivedStateFromProps(nextProps, prevState) {
@@ -29,7 +33,9 @@ class CornChatUserContainer extends React.Component {
       log("CornChatUserContainer: getDerivedStateFromProps - different");
       return {
         prevHipchatOauthToken: nextProps.hipchatOauthToken,
-        authUser: null,
+        appSyncClient: null,
+        hipchatUserId: null,
+        hipchatOauthToken: null,
         authError: null
       };
     }
@@ -41,34 +47,23 @@ class CornChatUserContainer extends React.Component {
   componentDidMount() {
     log("CornChatUserContainer: componentDidMount - login");
     this.login();
-
-    // Auto-Login every 50 minutes to keep the Cognito session from expiring
-    // TODO Consider moving to AWS Amplify library which now has federated
-    // identity login support for Developer pools, and automatic cred refresh.
-    const autoLogin = () => {
-      log("CornChatUserContainer: Keeping session alive");
-      this.login();
-    }
-    //const interval = 50 * 60 * 1000; // 50 minutes
-    const interval = 1 * 60 * 1000; // 50 minutes
-    const timer = setInterval(autoLogin, interval);
-    this.setState({timer});
   }
 
   componentDidUpdate(prevProps, prevState) {
     log("CornChatUserContainer: componentDidUpdate");
-    if (this.state.authUser === null && this.state.authError === null && !this.state.loggingIn) {
+    if (this.state.appSyncClient === null && this.state.authError === null && !this.state.loggingIn) {
       log("CornChatUserContainer: componentDidUpdate - login");
       this.login();
     }
   }
 
-  componentWillUnmount() {
-    clearInterval(this.state.timer);
-  }
-
   handleAuthenticationError(err) {
-    this.setState({ authUser: null, authError: err, loggingIn: false });
+    this.setState({
+      appSyncClient: null,
+      hipchatUserId: null,
+      hipchatOauthToken: null,
+      authError: err,
+      loggingIn: false });
   }
 
   login() {
@@ -86,31 +81,80 @@ class CornChatUserContainer extends React.Component {
       return;
     }
 
-    log("CornChatUserContainer: loginWithHipchatOauthToken");
-    Authenticate.loginWithHipchatOauthToken(hipchatUserId, hipchatOauthToken, (err, aws) => {
-      try {
-        if (err) {
-          log("CornChatUser: Error authenticating with Hipchat Oauth Token: " + err);
-          this.handleAuthenticationError(err);
-          return;
-        }
+    const appSyncClient = this.appSyncClient();
 
-        this.setState({
-          authUser: {
-            isAuthenticated: true,
-            hipchatUserId: hipchatUserId,
-            aws: aws,
-            lastAuthenticatedAt: new Date().getTime()
-          },
-          authError: null,
-          loggingIn: false
-        });
-      }
-      catch(err) {
-        log("CornChatUser: Failed to authenticate user: " + err);
-        this.handleAuthenticationError(err);
-      }
+    this.setState({
+      appSyncClient: appSyncClient,
+      hipchatUserId: this.props.hipchatUserId,
+      hipchatOauthToken: this.props.hipchatOauthToken,
+      authError: null,
+      loggingIn: false
     });
+  }
+
+  appSyncClient() {
+    log("!!!!!!!!!!!!!!!!!! appSyncClient")
+    const { hipchatUserId, hipchatOauthToken } = this.props;
+
+    const credentialsFunction = () => {
+      return new Promise((resolve, reject) => {
+        log("!!! credentialsFunction INVOKED");
+        // TODO Find a better cache for the CORN_token than a window global!
+        if (window.CORN_token != null) {
+          log("!!! credentialsFunction: exists:");
+          const waitForCreds = () => {
+            if (!window.CORN_token.loading) {
+              log("!!! got existing token");
+              console.dir(window.CORN_token);
+              resolve(window.CORN_token.creds);
+            }
+            else {
+              log("!!! waiting for token");
+              window.setTimeout(waitForCreds, 100);
+            }
+          }
+          waitForCreds();
+        }
+        else {
+          window.CORN_token = { loading: true };
+          Authenticate.loginWithHipchatOauthToken(hipchatUserId, hipchatOauthToken, (err, creds) => {
+            log("!!! credentialsFunction result:");
+            console.dir(err);
+            console.dir(creds);
+            if (err) {
+              return reject(err);
+            }
+            // aws.config.credentials.expireTime: Tue Jun 05 2018 17:24:47 GMT-0400 (EDT)
+            const result = {
+                loading: false,
+                creds: creds,
+                expires_at: new Date().getTime() + 60 * 1000 // Expire in 1 minute
+            };
+            window.CORN_token = result;
+            console.dir(result);
+            return resolve(result.creds);
+          });
+        }
+      });
+    }
+
+    log("!!!!!!!!!!!!!! AWSAppSyncClient refreshing");
+    try {
+      return new AWSAppSyncClient({
+        // We can support offline later...
+        disableOffline: true,
+        url: CORNCHAT_GRAPHQL_ENDPOINT_URL,
+        region: CORNCHAT_AWS_REGION,
+        auth: {
+          // See: https://docs.aws.amazon.com/appsync/latest/devguide/security.html
+          type: "AWS_IAM",
+          credentials: credentialsFunction
+        }
+      });
+    }
+    catch(err) {
+      log("AWSAppSyncClient refresh error: " + err);
+    }
   }
 
   // TODO Keep user credentials refreshed every 50 minutes
@@ -118,9 +162,9 @@ class CornChatUserContainer extends React.Component {
 
   render() {
     log("CornChatUserContainer: render");
-    if (this.state.authUser || this.state.authError) {
+    if (this.state.appSyncClient || this.state.authError) {
       return this.props.renderProp({
-        authUser: this.state.authUser,
+        appSyncClient: this.state.appSyncClient,
         authError: this.state.authError
       });
     }

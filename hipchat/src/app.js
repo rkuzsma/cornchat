@@ -44,7 +44,6 @@ import ScrollHandler from './scroll-handler';
 class App extends React.Component {
   constructor(props) {
     super(props);
-    this.appSyncClient = this.appSyncClient.bind(this);
     this.scrollHandler = new ScrollHandler;
   }
 
@@ -81,15 +80,15 @@ class App extends React.Component {
                       <CornChatUserContainer
                         hipchatUserId={hipchatUserId}
                         hipchatOauthToken={hipchatOauthToken}
-                        renderProp={({ authUser, authError }) => {
+                        renderProp={({ appSyncClient, authError }) => {
                           if (authError) {
                             return ( <AuthenticationErrorMessage authError={authError} /> );
                           }
-                          if (!authUser) {
+                          if (!appSyncClient) {
                             return null;
                           }
                           return (
-                            <ApolloProvider client={this.appSyncClient(authUser)}>
+                            <ApolloProvider client={appSyncClient}>
                               <Rehydrated>
                                 <div>
                                     <RoomIdContainer
@@ -154,26 +153,6 @@ class App extends React.Component {
         ></SettingsContainer>
       </ErrorBoundary>
     );
-  }
-
-  appSyncClient(authUser) {
-    log("AWSAppSyncClient refreshing");
-    try {
-      return new AWSAppSyncClient({
-        // We can support offline later...
-        disableOffline: true,
-        url: CORNCHAT_GRAPHQL_ENDPOINT_URL,
-        region: CORNCHAT_AWS_REGION,
-        auth: {
-          // See: https://docs.aws.amazon.com/appsync/latest/devguide/security.html
-          type: "AWS_IAM",
-          credentials: authUser.aws.config.credentials
-        }
-      });
-    }
-    catch(err) {
-      log("AWSAppSyncClient refresh error: " + err);
-    }
   }
 }
 

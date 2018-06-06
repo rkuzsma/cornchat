@@ -27,13 +27,26 @@ class Authenticate {
           return fn("Invalid Hipchat Oauth Token", null);
         }
         log("Authenticate: Authenticated user. IdentityId: " + output.identityId + ", token: " + output.token.substring(output.token.length - 10) + "...");
-        var creds = AWS.config.credentials;
-        creds.params.IdentityId = output.identityId;
-        creds.params.Logins = {
-           'cognito-identity.amazonaws.com': output.token
-        };
-        creds.expired = true;
-        return fn(null, AWS);
+
+        // Set the region where your identity pool exists (us-east-1, eu-west-1)
+        AWS.config.region = CORNCHAT_AWS_REGION;
+        // Configure the credentials provider to use your identity pool
+        AWS.config.credentials = new AWS.CognitoIdentityCredentials({
+           IdentityPoolId: CORNCHAT_IDENTITY_POOL_ID,
+           IdentityId: output.identityId,
+           Logins: {
+              'cognito-identity.amazonaws.com': output.token
+           }
+        });
+        // Make the call to obtain credentials
+        AWS.config.credentials.get(() => {
+          const creds = {
+            accessKeyId: AWS.config.credentials.accessKeyId,
+            secretAccessKey: AWS.config.credentials.secretAccessKey,
+            sessionToken: AWS.config.credentials.sessionToken
+          }
+          return fn(null, creds);
+        });
       });
     }
     catch(err) {
