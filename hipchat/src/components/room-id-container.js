@@ -17,8 +17,10 @@ class RoomIdContainer extends React.Component {
   componentDidMount() {
     // Subscribe to the event channel for proper room updates
     this.roomChangedListener = (roomId) => {
-      log("RoomIdContainer: Room ID changed: " + roomId);
-      this.setState({roomId: roomId});
+      if (this.state.roomId !== roomId) {
+        log("RoomIdContainer: Room ID changed: " + roomId);
+        this.setState({roomId: roomId});
+      }
     }
     window.HC.AppDispatcher.addListener("after:updated:active_chat", this.roomChangedListener);
 

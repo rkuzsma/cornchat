@@ -50,6 +50,7 @@ class AddTagDialog extends React.Component {
               value={this.state.tagName}
               onChange={this.handleOptionSelected}
               autoFocus={true}
+              openOnFocus={true}
             />
           </div>
         </ClickOutside>

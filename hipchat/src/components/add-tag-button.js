@@ -46,7 +46,7 @@ class AddTagButton extends React.Component {
   render() {
     return (
       <span>
-        <span ref={this.buttonRef} className='CORN-addTag' onClick={this.toggleAddTagDialog}>🏷️</span>
+        <span ref={this.buttonRef} className='CORN-addTag' onClick={this.toggleAddTagDialog} title='Tag this message'>🏷️</span>
           <AddTagDialogPortal>
             <div style={{
                 position: 'absolute',
