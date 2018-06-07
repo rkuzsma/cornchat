@@ -1,7 +1,7 @@
 patch-package
 --- a/node_modules/aws-appsync/lib/link/auth-link.js
 +++ b/node_modules/aws-appsync/lib/link/auth-link.js
-@@ -199,5 +199,5 @@ var formatAsRequest = function (_a, options) {
+@@ -201,5 +201,5 @@ var formatAsRequest = function (_a, options) {
          variables: variables,
          query: printer_1.print(query)
      };
