@@ -1,4 +1,4 @@
-import {default as logger} from './logger';
+import {default as logger} from '../logger';
 import ResizeSensor from 'css-element-queries/src/ResizeSensor';
 
 // Keeps the HC Scrollable Messags View scroll position steady during renderings.
@@ -24,34 +24,37 @@ import ResizeSensor from 'css-element-queries/src/ResizeSensor';
 //  We setInterval() to force our onscroll handler back into the DOM tree.
 //
 // This handler doesn't depend on our CornChat state at all, it's purely
-// a DOM manipulation. So it's not a React component, just a Singleton.
+// a DOM manipulation.
 
 const DEBUG_LOGGING = false;
 const log = (msg) => {
   if (DEBUG_LOGGING) logger(msg);
 }
 
-let _instance = null;
+class ScrollHandler extends React.Component {
 
-class ScrollHandler {
-  constructor() {
-    if (!_instance) {
-      log("ScrollHandler: Initializing");
-      _instance = this;
-      this.getScrollBox = this.getScrollBox.bind(this);
-      this.scrollHandler = this.scrollHandler.bind(this);
-      this.resizeHandler = this.resizeHandler.bind(this);
-      this.reconnectScrollHandler = this.reconnectScrollHandler.bind(this);
-    }
+  constructor(props) {
+    super(props);
+    this.getScrollBox = this.getScrollBox.bind(this);
+    this.scrollHandler = this.scrollHandler.bind(this);
+    this.resizeHandler = this.resizeHandler.bind(this);
+    this.reconnectScrollHandler = this.reconnectScrollHandler.bind(this);
+  }
+
+  componentDidMount() {
+    log("ScrollHandler attaching");
+    this.attach();
+  }
+  componentWillUnmount() {
+    log("ScrollHandler detaching");
+    this.detach();
   }
 
   attach() {
-    log("ScrollHandler: Setting DOM watcher");
     this.domWatcher = window.setInterval(this.reconnectScrollHandler, 1000);
   }
 
   detach() {
-    log("ScrollHandler: Un-setting DOM watcher");
     window.clearInterval(this.domWatcher);
 
     log("ScrollHandler: Detaching scroll listener");
@@ -138,8 +141,10 @@ class ScrollHandler {
       scrollBox.scrollTop = this.snapToCoordinate;
     }
   }
+
+  render() {
+    return null;
+  }
 }
-
-
 
 export default ScrollHandler;

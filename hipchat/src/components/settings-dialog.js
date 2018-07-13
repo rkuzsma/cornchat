@@ -14,9 +14,10 @@ class SettingsDialog extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      isApplyMarkdown: props.settingValues.isApplyMarkdown
+      isApplyMarkdown: props.settingValues.isApplyMarkdown,
+      enableCornChat: props.settingValues.enableCornChat
     };
-
+    
     this.handleSubmit = this.handleSubmit.bind(this);
     this.handleInputChange = this.handleInputChange.bind(this);
   }
@@ -25,7 +26,8 @@ class SettingsDialog extends React.Component {
     log("SettingsDialog: handleSubmit");
     event.preventDefault();
     this.props.onSettingsChanged({
-      isApplyMarkdown: this.state.isApplyMarkdown
+      isApplyMarkdown: this.state.isApplyMarkdown,
+      enableCornChat: this.state.enableCornChat
     });
     this.props.onClose();
   }
@@ -56,7 +58,12 @@ class SettingsDialog extends React.Component {
           <hr/>
           <form>
             <label>
-              <input name="isApplyMarkdown" type="checkbox" checked={this.state.isApplyMarkdown} onChange={this.handleInputChange} size="35" />
+              <input value={this.state.enableCornChat} name="enableCornChat" type="checkbox" checked={this.state.enableCornChat} onChange={this.handleInputChange} size="35" />
+              Enable CornChat
+            </label>
+            <br/>
+            <label>
+              <input value={this.state.isApplyMarkdown} name="isApplyMarkdown" type="checkbox" checked={this.state.isApplyMarkdown} onChange={this.handleInputChange} size="35" />
               Apply Markdown Formatting to Messages
             </label>
             <p/>
