@@ -25,7 +25,7 @@ describe('MsgDecorator', function() {
     it('should preserve a trailing space and <BR>', function() {
       testMarkdown('trailingSpaceAndBR',
         '<div id="trailingSpaceAndBR" class="notification msg-line"><b xmlns="http://www.w3.org/1999/xhtml">You said: </b>Hello world!. <br xmlns="http://www.w3.org/1999/xhtml"><i xmlns="http://www.w3.org/1999/xhtml">Psst: click on the glance that says "Hello World" in the right sidebar</i></div>',
-        '<b xmlns="http://www.w3.org/1999/xhtml">You said: </b><span>Hello world!.<br></span><i xmlns="http://www.w3.org/1999/xhtml">Psst: click on the glance that says "Hello World" in the right sidebar</i>'
+        '<b xmlns="http://www.w3.org/1999/xhtml">You said: </b><span><br>Hello world!.<br></span><i xmlns="http://www.w3.org/1999/xhtml">Psst: click on the glance that says "Hello World" in the right sidebar</i>'
       );
     });
     it('should preserve a trailing space before an anchor link', function() {
@@ -37,7 +37,7 @@ describe('MsgDecorator', function() {
     it('should highlight javascript syntax', function() {
       testMarkdown('syntaxHighlight',
         '<div id="syntaxHighlight" class="msg-wrap"><br>Syntax highlighting<br><br>``` js<br>var foo = function (bar) {<br>  return bar++;<br>};<br><br>console.log(foo(5));<br>```<br></div>',
-        '<span><p>Syntax highlighting</p>' + "\n" +
+        '<span><br><p>Syntax highlighting</p>' + "\n" +
           '<pre><code class="language-js"><span class="hljs-keyword">var</span> foo = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">bar</span>) </span>{' + "\n" +
           '  <span class="hljs-keyword">return</span> bar++;' + "\n" +
           '};' + "\n" +
@@ -50,7 +50,7 @@ describe('MsgDecorator', function() {
       testMarkdown('emoticons',
         '<div id="emoticons" class="msg-line"><img class="remoticon" src="https://dujrsrsgsd3nh.cloudfront.net/img/emoticons/18058/blobhungry-1525893732@2x.gif" onerror="if (HC.emoticon_resolution_helper) { HC.emoticon_resolution_helper(this); }"> *bold* <img class="remoticon" aria-label="(blobhungry)" alt="(blobhungry)" height="30" width="30" src="https://dujrsrsgsd3nh.cloudfront.net/img/emoticons/18058/blobhungry-1525893732@2x.gif" ' +
           'onerror="if (HC.emoticon_resolution_helper) {' + "\n" + 'HC.emoticon_resolution_helper(this); }"> </div>',
-        '<img class="remoticon" src="https://dujrsrsgsd3nh.cloudfront.net/img/emoticons/18058/blobhungry-1525893732@2x.gif" onerror="if (HC.emoticon_resolution_helper) { HC.emoticon_resolution_helper(this); }"><span><em>bold</em> </span><img class="remoticon" aria-label="(blobhungry)" alt="(blobhungry)" height="30" width="30" src="https://dujrsrsgsd3nh.cloudfront.net/img/emoticons/18058/blobhungry-1525893732@2x.gif" onerror="if (HC.emoticon_resolution_helper) {' + "\n" +
+        '<img class="remoticon" src="https://dujrsrsgsd3nh.cloudfront.net/img/emoticons/18058/blobhungry-1525893732@2x.gif" onerror="if (HC.emoticon_resolution_helper) { HC.emoticon_resolution_helper(this); }"><span> <em>bold</em> </span><img class="remoticon" aria-label="(blobhungry)" alt="(blobhungry)" height="30" width="30" src="https://dujrsrsgsd3nh.cloudfront.net/img/emoticons/18058/blobhungry-1525893732@2x.gif" onerror="if (HC.emoticon_resolution_helper) {' + "\n" +
           'HC.emoticon_resolution_helper(this); }"> '
       );
     });
@@ -58,6 +58,12 @@ describe('MsgDecorator', function() {
       testMarkdown('plain',
         '<div id="plain" class="msg-line">plain text</div>',
         'plain text'
+      );
+    });
+    it('should handle comma separated words', function() {
+      testMarkdown('commas',
+        '<div id="commas" class="msg-line">Conversations,<wbr> emoji reactions,<wbr> markdown,<wbr> and more.</div>',
+        'Conversations,<wbr> emoji reactions,<wbr> markdown,<wbr> and more.'
       );
     });
   });

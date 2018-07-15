@@ -45,7 +45,9 @@ const decorateDiv = (div, decorators, settingValues) => {
       const bufferedContent = bufferedContentNodes.reduce((accumulator, currentValue) => {
         return accumulator + getTextContent(currentValue);
       }, '');
+      //console.log("decorateText:" + bufferedContent);
       const decoratedText = decorateText(bufferedContent, decorators, settingValues);
+      //console.log("decorated:   " + decoratedText);
       if (decoratedText !== bufferedContent) {
         const parentNode = this.parentNode;
         const replacementNode = document.createElement('span');

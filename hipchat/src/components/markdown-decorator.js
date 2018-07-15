@@ -83,6 +83,13 @@ export default function decorate(innerText, settingValues) {
       decoratedHtml.lastIndexOf('<p>') === 0) {
     decoratedHtml = decoratedHtml.substring(3, decoratedHtml.length - 4);
   }
+  // Restore any trimmed whitespace from the beginning
+  if (innerText.startsWith(' ')) {
+    decoratedHtml = ' ' + decoratedHtml;
+  }
+  else if (innerText.endsWith("\n")) {
+    decoratedHtml = '<br/>' + decoratedHtml;
+  }
   // Restore any trimmed whitespace from the end
   if (innerText.endsWith(' ')) {
     decoratedHtml += ' ';
