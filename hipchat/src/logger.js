@@ -3,6 +3,6 @@ export default function log(str) {
     window.macapi.log("[CORNCHAT]: " + str);
   }
   else {
-    console.log("[CORNCHAT]: " + str);
+    console.debug("[CORNCHAT]: " + str);
   }
 }

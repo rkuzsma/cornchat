@@ -24,18 +24,14 @@ class MsgInfosContainer extends React.Component {
   }
 
   componentWillUnmount() {
-    log("MsgInfosContainer: unsubscribe");
     this.unsubscribe();
   }
 
   componentDidMount() {
-    log("MsgInfosContainer: componentDidMount");
     this.unsubscribe = this.props.subscribeToNewMsgInfo();
   }
 
   componentDidUpdate(prevProps, prevState) {
-    log("MsgInfosContainer: componentDidUpdate");
-
     if (!this.props.loading) {
       // Check if there are any new HipChat messages to fetch
 
@@ -121,9 +117,6 @@ const mapResultsToProps = (data, existingMsgInfos, hipchatUserId) => {
   let { allMids, allDistinctMids, tagsByMid, reactionsByMid, allDistinctTags, recentTagNames } =
    (existingMsgInfos || emptyMsgInfos());
 
-   log("MsgInfosContainer: mapResultsToProps called; existingMsgInfos:");
-   console.dir(existingMsgInfos);
-
   if (data && !data.loading && data.listMsgInfos) {
     data.listMsgInfos.items.forEach((midItem) => {
       if (midItem && midItem.mid) {
@@ -169,8 +162,6 @@ const mapResultsToProps = (data, existingMsgInfos, hipchatUserId) => {
     allDistinctTags: allDistinctTags,
     recentTagNames: recentTagNames
   }
-  log("MsgInfosContainer: mapResultsToProps result:");
-  console.dir(result);
   return result;
 }
 
@@ -195,8 +186,6 @@ export default graphql(ListMsgInfosQuery, {
     }),
     // Handle the response from GraphQL for ListMsgInfosQuery:
     props: (resultProps) => {
-      log("!!!! graphql:");
-      console.dir(resultProps);
       return {
         loading: resultProps.data.loading,
         error: resultProps.data.error,
