@@ -4,13 +4,14 @@
   "description": "",
   "private": true,
   "scripts": {
-    "start:dev": "webpack-dev-server --config webpack.dev.js --hot --port 8080",
+    "start": "webpack-dev-server --config webpack.dev.js --hot --port 8080",
+    "start:dev": "npm run start",
     "build:dev": "CORNCHAT_APP_NAME=TestCornChat webpack --config webpack.dev.js",
     "generate-dev-certs": "openssl req -x509 -newkey rsa:4096 -keyout dev-certs/key.pem -out dev-certs/cert.pem -days 365 -nodes -subj \"/CN=cornchat.development.fake/emailAddress=cornchat@fakedomain.com/O=Cornchat/OU=Development/C=US/ST=NH/L=Nowhere\"",
     "trust-dev-certs": "security add-trusted-cert -e hostnameMismatch -r trustRoot -k ~/Library/Keychains/login.keychain dev-certs/cert.pem",
     "build:prod": "CORNCHAT_APP_NAME=ProdCornChat webpack --config webpack.prod.js",
     "deploy": "npm run build:dev && npm run build:prod && echo 'builds.cornchat.online' > ./dist/CNAME && gh-pages -d dist",
-    "test": "mocha \"src/**/*.spec.js\"",
+    "test": "mocha-webpack --webpack-config webpack.test.js \"src/**/*.spec.js\" || true",
     "//": "Patch aws-appsync to fix https://github.com/awslabs/aws-mobile-appsync-sdk-js/issues/128 :",
     "prepare": "patch-package"
   },
@@ -34,6 +35,10 @@
     "css-loader": "^0.28.11",
     "file-loader": "^1.1.11",
     "gh-pages": "^1.2.0",
+    "jquery": "^3.3.1",
+    "jsdom": "^11.11.0",
+    "mocha": "^5.2.0",
+    "mocha-webpack": "^2.0.0-beta.0",
     "node-fetch": "^2.1.2",
     "patch-package": "^5.1.1",
     "react-hot-loader": "^4.2.0",
@@ -43,7 +48,8 @@
     "webpack-bundle-analyzer": "^2.13.1",
     "webpack-cli": "^2.1.5",
     "webpack-dev-server": "^3.1.1",
-    "webpack-merge": "^4.1.2"
+    "webpack-merge": "^4.1.2",
+    "webpack-node-externals": "^1.7.2"
   },
   "dependencies": {
     "aws-appsync": "^1.0.22",

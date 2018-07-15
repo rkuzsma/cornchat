@@ -43,7 +43,7 @@ nvm use
 npm install
 npm run generate-dev-certs
 npm run trust-dev-certs
-npm run start:dev -- --hot
+npm run start
 ```
 
 CornChat bundle is served from: [https://localhost:8080/TestCornChat-bundle.js](https://localhost:8080/TestCornChat-bundle.js).

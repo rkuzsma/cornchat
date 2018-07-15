@@ -1,14 +1,10 @@
+const webpack = require('webpack');
 const merge = require('webpack-merge');
-const commonPromise = require('./webpack.common.js');
+const remoteConfigPromise = require('./webpack.remote.js');
 const path = require('path');
 const fs = require('fs');
-const webpack = require('webpack');
 
-const envVar = (varName, defaultVal) => {
-  return process.env[varName] ?
-    process.env[varName] :
-    defaultVal;
-}
+const envVar = (varName, defaultVal) => process.env[varName] ? process.env[varName] : defaultVal;
 
 const CORNCHAT_APP_NAME = envVar('CORNCHAT_APP_NAME', "TestCornChat");
 
@@ -38,8 +34,8 @@ const devConfig = {
 
 module.exports = () => {
   return new Promise((resolve, reject) => {
-    commonPromise().then((commonConfig) => {
-      resolve(merge(commonConfig, devConfig));
+    remoteConfigPromise(CORNCHAT_APP_NAME).then((remoteConfig) => {
+      resolve(merge(remoteConfig, devConfig));
     });
   });
 }
