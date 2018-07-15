@@ -1,5 +1,5 @@
 import log from '../logger';
-import markdown from 'marked';
+import MarkdownIt from 'markdown-it';
 import hljs from 'highlight.js/lib/highlight';
 
 // Include only a subset to reduce bundle size
@@ -58,38 +58,37 @@ hljs.registerLanguage('rust', rust);
 import sql from 'highlight.js/lib/languages/sql';
 hljs.registerLanguage('sql', sql);
 
-markdown.setOptions({
-  renderer: new markdown.Renderer(),
-  highlight: function(code, lang) {
-    if (typeof lang === 'undefined') {
-      return hljs.highlightAuto(code).value;
-    } else if (lang === 'nohighlight') {
-      return code;
-    } else {
-      return hljs.highlight(lang, code).value;
-    }
-  },
-  pedantic: false,
-  gfm: true,
-  tables: true,
-  breaks: false,
-  sanitize: false,
-  smartLists: true,
-  smartypants: false,
-  xhtml: false
-});
-
 export default function decorate(innerText, settingValues) {
   if (!settingValues.isApplyMarkdown) {
     return innerText;
   }
 
-  const decoratedHtml = markdown(innerText);
+  const md = MarkdownIt({
+    highlight: function(str, lang) {
+      if (lang && hljs.getLanguage(lang)) {
+        try {
+          return hljs.highlight(lang, str).value;
+        } catch (__) {}
+      }
+      return ''; // use external default escaping
+    }
+  });
+
+  let decoratedHtml = md.render(innerText)
+  decoratedHtml = decoratedHtml.trim();
+
   // Marked.js surrounds a single, plain-text (no markdown) line inside <p>...</p>
-  // If all we did was surround the text in <p>...</p>, return the original so the
-  // caller knows that no material markdown was applied.
-  if (innerText === decoratedHtml.substring(3, decoratedHtml.length - 5)) {
-    return innerText;
+  if (decoratedHtml.startsWith('<p>') &&
+      decoratedHtml.endsWith('</p>') &&
+      decoratedHtml.lastIndexOf('<p>') === 0) {
+    decoratedHtml = decoratedHtml.substring(3, decoratedHtml.length - 4);
+  }
+  // Restore any trimmed whitespace from the end
+  if (innerText.endsWith(' ')) {
+    decoratedHtml += ' ';
+  }
+  else if (innerText.endsWith("\n")) {
+    decoratedHtml += '<br/>';
   }
   return decoratedHtml;
 };

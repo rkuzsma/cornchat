@@ -2,6 +2,7 @@ import log from '../logger';
 import React from "react";
 import ReactDOM from "react-dom";
 import PropTypes from 'prop-types';
+import decorateMsgLineEl from './msg-decorator';
 
 class MsgsDecorator extends React.Component {
   static propTypes = {
@@ -26,44 +27,20 @@ class MsgsDecorator extends React.Component {
             msgLineEl = truncatedEl[0];
           }
         }
+
         const originalHTML = msgLineEl.innerHTML;
 
-        // Preserve any embedded images, links, etc.
-        const childHtml = [];
-        $(msgLineEl).children().each(function(i) {
-          // .innerText converts <br> to newlines, which we need for proper syntax highlighting to work
-          if (this.outerHTML !== '<br>') {
-            childHtml.push(this.outerHTML);
-            this.outerHTML = "CORNCHAT_EMBEDDED_HTML_TOKEN_" + i;
-          }
-        });
-
-        // Decorate the msg text
-        let isDecorated = false;
-        this.props.decorators.forEach((decorator) => {
-          const decorated = decorator(msgLineEl.innerText, this.props.settingValues);
-          if (decorated !== msgLineEl.innerText) {
-            isDecorated = true;
-            msgLineEl.innerHTML = decorated;
-            // Re-inject the embedded images, links
-            let resolvedHtml = msgLineEl.innerHTML;
-            childHtml.forEach((html, i) => {
-              resolvedHtml = resolvedHtml.replace("CORNCHAT_EMBEDDED_HTML_TOKEN_" + i, html);
-            });
-            msgLineEl.innerHTML = resolvedHtml;
-          }
-        });
-        if (!isDecorated) {
-          // No changes made; revert back to version without any CORNCHAT_EMBEDDED_HTML_TOKEN_#s
-          msgLineEl.innerHTML = originalHTML;
-        }
-        else {
+        if (decorateMsgLineEl($(msgLineEl), this.props.decorators, this.props.settingValues)) {
           // Preserve original HTML so user can revert later in the UI
-          msgLineEl.setAttribute('CORNCHAT-undecorated-html', originalHTML);
+          // var replacementNode = document.createElement('div');
+          // replacementNode.innerHTML = msgLineEl.innerHTML;
+          // msgLineEl.parentNode.insertBefore(replacementNode, msgLineEl);
+          // msgLineEl.parentNode.removeChild(msgLineEl);
           msgLineEl.innerHTML = '<div class="CORN-toggle-markdown">' +
             '<div title="Unapply Markdown Formatting" class="CORN-toggle-markdown-button" onClick="var msg=this.parentElement.parentElement; msg.innerHTML=msg.getAttribute(\'CORNCHAT-undecorated-html\');"><span>M⬇</span></div>' +
             msgLineEl.innerHTML +
             '</div>';
+          msgLineEl.setAttribute('CORNCHAT-undecorated-html', originalHTML);
         }
       });
     });
